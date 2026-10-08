@@ -62,7 +62,11 @@ public class AllMediaFragment extends Fragment implements MediaGridAdapter.OnMed
         viewModel.getMediaList().observe(getViewLifecycleOwner(), items -> {
             allMediaItems.clear();
             if (items != null) {
-                allMediaItems.addAll(items);
+                for (MediaItem item : items) {
+                    if (!item.isAudio()) {
+                        allMediaItems.add(item);
+                    }
+                }
             }
             int initialCount = Math.min(INITIAL_PAGE_SIZE, allMediaItems.size());
             currentLoadedCount = initialCount;

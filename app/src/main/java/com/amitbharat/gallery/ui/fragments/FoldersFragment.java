@@ -53,11 +53,14 @@ public class FoldersFragment extends Fragment implements FolderGridAdapter.OnFol
             viewModel.loadFolders();
         });
 
-        setupFilterChips();
-
         viewModel.getFoldersList().observe(getViewLifecycleOwner(), folders -> {
             allFolders = folders != null ? new ArrayList<>(folders) : new ArrayList<>();
-            filterFoldersByChip(binding.chipGroupSmartAlbums.getCheckedChipId());
+            allFolders.sort((f1, f2) -> {
+                String name1 = f1.getFolderName() != null ? f1.getFolderName() : "";
+                String name2 = f2.getFolderName() != null ? f2.getFolderName() : "";
+                return name1.compareToIgnoreCase(name2);
+            });
+            adapter.submitList(new ArrayList<>(allFolders));
             binding.emptyState.setVisibility(allFolders.isEmpty() ? View.VISIBLE : View.GONE);
         });
 
@@ -71,66 +74,6 @@ public class FoldersFragment extends Fragment implements FolderGridAdapter.OnFol
             hasLoaded = true;
             viewModel.loadFolders();
         }
-    }
-
-    private void setupFilterChips() {
-        binding.chipGroupSmartAlbums.setOnCheckedStateChangeListener((group, checkedIds) -> {
-            if (!checkedIds.isEmpty()) {
-                filterFoldersByChip(checkedIds.get(0));
-            } else {
-                adapter.submitList(allFolders);
-            }
-        });
-    }
-
-    private void filterFoldersByChip(int chipId) {
-        if (allFolders == null) return;
-        List<FolderItem> filtered = new ArrayList<>();
-
-        if (chipId == R.id.chipCamera) {
-            for (FolderItem f : allFolders) {
-                if (f.getFolderName().toLowerCase(Locale.ROOT).contains("dcim") ||
-                        f.getFolderName().toLowerCase(Locale.ROOT).contains("camera")) {
-                    filtered.add(f);
-                }
-            }
-        } else if (chipId == R.id.chipScreenshots) {
-            for (FolderItem f : allFolders) {
-                if (f.getFolderName().toLowerCase(Locale.ROOT).contains("screenshot")) {
-                    filtered.add(f);
-                }
-            }
-        } else if (chipId == R.id.chipDownloads) {
-            for (FolderItem f : allFolders) {
-                String name = f.getFolderName().toLowerCase(Locale.ROOT);
-                String path = f.getFolderPath().toLowerCase(Locale.ROOT);
-                if (name.contains("download") || name.contains("telegram") ||
-                        path.contains("download") || path.contains("telegram")) {
-                    filtered.add(f);
-                }
-            }
-        } else if (chipId == R.id.chipVideos) {
-            for (FolderItem f : allFolders) {
-                if (f.getFolderName().toLowerCase(Locale.ROOT).contains("movie") ||
-                        f.getFolderName().toLowerCase(Locale.ROOT).contains("video")) {
-                    filtered.add(f);
-                }
-            }
-        } else if (chipId == R.id.chipFavorites) {
-            // Filter media by favorites
-            List<MediaItem> allMedia = viewModel.getAllMedia().getValue();
-            if (allMedia != null) {
-                List<MediaItem> favs = new ArrayList<>();
-                for (MediaItem m : allMedia) {
-                    if (m.isFavorite()) favs.add(m);
-                }
-                filtered = MediaUtils.groupMediaByFolders(favs);
-            }
-        } else {
-            filtered = new ArrayList<>(allFolders);
-        }
-
-        adapter.submitList(filtered);
     }
 
     @Override

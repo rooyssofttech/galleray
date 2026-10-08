@@ -36,8 +36,23 @@ public class CropImageView extends AppCompatImageView {
     private boolean isFlippedH = false;
     private boolean isFlippedV = false;
 
+    public enum EditorMode {
+        CROP, ADJUST, FILTERS, ERASER
+    }
+
+    private EditorMode editorMode = EditorMode.CROP;
+
+    // Magic Eraser fields
+    private final android.graphics.Path eraserScreenPath = new android.graphics.Path();
+    private final Paint eraserPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint eraserCursorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private float eraserBrushSize = 50f; // px
+    private float eraserTouchX = -100f, eraserTouchY = -100f;
+    private boolean isEraserTouching = false;
+    private final java.util.List<android.graphics.Path> eraserStrokePaths = new java.util.ArrayList<>();
+    private final java.util.List<Float> eraserStrokeSizes = new java.util.ArrayList<>();
+
     private float lastTouchX, lastTouchY;
-    // 0: None, 1: Move, 2: TL, 3: TR, 4: BL, 5: BR, 6: Top, 7: Bottom, 8: Left, 9: Right
     private int dragHandle = 0;
     private static final float HANDLE_TOUCH_RADIUS = 90f;
     private static final float MIN_CROP_SIZE = 80f;
@@ -73,6 +88,15 @@ public class CropImageView extends AppCompatImageView {
 
         handlePaint.setColor(Color.WHITE);
         handlePaint.setStyle(Paint.Style.FILL);
+
+        eraserPaint.setColor(Color.argb(165, 236, 72, 153)); // Glowing pink/magenta highlight
+        eraserPaint.setStyle(Paint.Style.STROKE);
+        eraserPaint.setStrokeCap(Paint.Cap.ROUND);
+        eraserPaint.setStrokeJoin(Paint.Join.ROUND);
+
+        eraserCursorPaint.setColor(Color.argb(220, 255, 255, 255));
+        eraserCursorPaint.setStyle(Paint.Style.STROKE);
+        eraserCursorPaint.setStrokeWidth(2.5f);
     }
 
     private android.graphics.ColorMatrixColorFilter activeColorFilter;
@@ -203,7 +227,26 @@ public class CropImageView extends AppCompatImageView {
 
         int w = getWidth();
         int h = getHeight();
-        if (w <= 0 || h <= 0 || cropRect.isEmpty()) return;
+        if (w <= 0 || h <= 0) return;
+
+        // Draw eraser strokes in ERASER mode
+        if (editorMode == EditorMode.ERASER) {
+            for (int i = 0; i < eraserStrokePaths.size(); i++) {
+                eraserPaint.setStrokeWidth(eraserStrokeSizes.get(i));
+                canvas.drawPath(eraserStrokePaths.get(i), eraserPaint);
+            }
+            if (isEraserTouching && !eraserScreenPath.isEmpty()) {
+                eraserPaint.setStrokeWidth(eraserBrushSize);
+                canvas.drawPath(eraserScreenPath, eraserPaint);
+            }
+            if (isEraserTouching && eraserTouchX >= 0 && eraserTouchY >= 0) {
+                canvas.drawCircle(eraserTouchX, eraserTouchY, eraserBrushSize / 2f, eraserCursorPaint);
+            }
+            return;
+        }
+
+        // Only draw crop overlay in CROP mode
+        if (editorMode != EditorMode.CROP || cropRect.isEmpty()) return;
 
         // Dim outside crop bounds
         canvas.drawRect(0, 0, w, cropRect.top, shadowPaint);
@@ -251,6 +294,44 @@ public class CropImageView extends AppCompatImageView {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (editorMode == EditorMode.ERASER) {
+            float x = event.getX();
+            float y = event.getY();
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    isEraserTouching = true;
+                    eraserTouchX = x;
+                    eraserTouchY = y;
+                    eraserScreenPath.reset();
+                    eraserScreenPath.moveTo(x, y);
+                    invalidate();
+                    return true;
+                case MotionEvent.ACTION_MOVE:
+                    isEraserTouching = true;
+                    eraserTouchX = x;
+                    eraserTouchY = y;
+                    eraserScreenPath.lineTo(x, y);
+                    invalidate();
+                    return true;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    isEraserTouching = false;
+                    eraserScreenPath.lineTo(x, y);
+                    eraserStrokePaths.add(new android.graphics.Path(eraserScreenPath));
+                    eraserStrokeSizes.add(eraserBrushSize);
+                    eraserScreenPath.reset();
+                    eraserTouchX = -100f;
+                    eraserTouchY = -100f;
+                    invalidate();
+                    return true;
+            }
+            return true;
+        }
+
+        if (editorMode != EditorMode.CROP) {
+            return false;
+        }
+
         float x = event.getX();
         float y = event.getY();
 
@@ -440,5 +521,77 @@ public class CropImageView extends AppCompatImageView {
             e.printStackTrace();
             return src;
         }
+    }
+
+    public void setEditorMode(EditorMode mode) {
+        this.editorMode = mode;
+        invalidate();
+    }
+
+    public EditorMode getEditorMode() {
+        return editorMode;
+    }
+
+    public void setEraserBrushSize(float size) {
+        this.eraserBrushSize = Math.max(8f, size);
+        invalidate();
+    }
+
+    public float getEraserBrushSize() {
+        return eraserBrushSize;
+    }
+
+    public void clearEraserStrokes() {
+        eraserStrokePaths.clear();
+        eraserStrokeSizes.clear();
+        eraserScreenPath.reset();
+        isEraserTouching = false;
+        eraserTouchX = -100f;
+        eraserTouchY = -100f;
+        invalidate();
+    }
+
+    public boolean hasEraserStrokes() {
+        return !eraserStrokePaths.isEmpty() || !eraserScreenPath.isEmpty();
+    }
+
+    public Bitmap generateEraserMaskBitmap(int targetWidth, int targetHeight) {
+        if (eraserStrokePaths.isEmpty() || targetWidth <= 0 || targetHeight <= 0) {
+            return null;
+        }
+        updateImageBounds();
+        if (imageBounds.width() <= 0 || imageBounds.height() <= 0) {
+            return null;
+        }
+
+        Bitmap mask = Bitmap.createBitmap(targetWidth, targetHeight, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(mask);
+        canvas.drawColor(Color.TRANSPARENT);
+
+        Paint maskPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        maskPaint.setColor(Color.WHITE);
+        maskPaint.setStyle(Paint.Style.STROKE);
+        maskPaint.setStrokeCap(Paint.Cap.ROUND);
+        maskPaint.setStrokeJoin(Paint.Join.ROUND);
+
+        float scaleX = (float) targetWidth / imageBounds.width();
+        float scaleY = (float) targetHeight / imageBounds.height();
+
+        for (int i = 0; i < eraserStrokePaths.size(); i++) {
+            android.graphics.Path p = eraserStrokePaths.get(i);
+            float strokeSize = eraserStrokeSizes.get(i);
+
+            Matrix m = new Matrix();
+            m.postTranslate(-imageBounds.left, -imageBounds.top);
+            m.postScale(scaleX, scaleY);
+
+            android.graphics.Path transformedPath = new android.graphics.Path();
+            p.transform(m, transformedPath);
+
+            maskPaint.setStrokeWidth(strokeSize * ((scaleX + scaleY) / 2f));
+            canvas.drawPath(transformedPath, maskPaint);
+        }
+
+        return mask;
     }
 }

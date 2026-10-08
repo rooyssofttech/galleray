@@ -181,6 +181,15 @@ public class ImageViewerActivity extends AppCompatActivity implements ViewPagerM
             }
         });
 
+        binding.btnCrop.setOnLongClickListener(v -> {
+            if (currentPosition < mediaList.size()) {
+                MediaItem item = mediaList.get(currentPosition);
+                com.amitbharat.gallery.utils.DeviceAiEditorHelper.openDeviceAiEditor(this, item.getPath(), 2030);
+                return true;
+            }
+            return false;
+        });
+
         binding.btnWallpaper.setOnClickListener(v -> {
             if (currentPosition < mediaList.size()) {
                 MediaItem item = mediaList.get(currentPosition);

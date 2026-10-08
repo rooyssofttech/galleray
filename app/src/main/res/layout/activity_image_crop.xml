@@ -25,6 +25,22 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDeviceAi"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:layout_marginEnd="6dp"
+                android:text="✨ AI Edit"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="#C084FC"
+                app:backgroundTint="#2A1B4E"
+                app:cornerRadius="19dp"
+                app:icon="@drawable/ic_auto_awesome"
+                app:iconTint="#C084FC"
+                app:iconSize="16dp" />
+
             <ImageButton
                 android:id="@+id/btnSaveConfig"
                 android:layout_width="40dp"
@@ -74,7 +90,7 @@
         android:paddingBottom="20dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
-        <!-- Mode Switcher Tabs (Crop | Adjust | Filters) -->
+        <!-- Mode Switcher Tabs (Crop | Adjust | Filters | Magic Eraser) -->
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabEditorMode"
             android:layout_width="match_parent"
@@ -103,6 +119,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="🎨 Filters" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🪄 Magic Eraser" />
 
         </com.google.android.material.tabs.TabLayout>
 
@@ -536,6 +557,121 @@
 
             </com.google.android.material.chip.ChipGroup>
         </HorizontalScrollView>
+
+        <!-- 4. MAGIC ERASER SECTION -->
+        <LinearLayout
+            android:id="@+id/sectionEraser"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🖌️ Brush over unwanted objects, people, or text to erase them"
+                android:textColor="#C084FC"
+                android:textSize="12sp"
+                android:gravity="center"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Brush Size Slider -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Brush Size"
+                    android:textColor="#D1D5DB"
+                    android:textSize="13sp" />
+
+                <com.google.android.material.slider.Slider
+                    android:id="@+id/sliderEraserBrush"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:value="50"
+                    android:valueFrom="15"
+                    android:valueTo="120"
+                    android:stepSize="1"
+                    app:thumbColor="#C084FC"
+                    app:trackColorActive="#C084FC"
+                    app:trackColorInactive="#374151" />
+
+                <TextView
+                    android:id="@+id/tvEraserBrushSize"
+                    android:layout_width="36dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:text="50px"
+                    android:textColor="#A0A5BD"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- Action Buttons Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnUndoEraser"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:text="Undo"
+                    android:textColor="#FFFFFF"
+                    app:icon="@drawable/ic_undo"
+                    app:iconTint="#FFFFFF"
+                    app:iconSize="16dp"
+                    app:backgroundTint="#262837"
+                    app:cornerRadius="20dp"
+                    android:layout_marginEnd="6dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnClearEraser"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:text="Clear"
+                    android:textColor="#EF4444"
+                    app:icon="@drawable/ic_close"
+                    app:iconTint="#EF4444"
+                    app:iconSize="16dp"
+                    app:backgroundTint="#262837"
+                    app:cornerRadius="20dp"
+                    android:layout_marginEnd="6dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnApplyEraser"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:text="🪄 Erase Object"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold"
+                    app:backgroundTint="#7C3AED"
+                    app:cornerRadius="20dp"
+                    app:elevation="2dp" />
+
+            </LinearLayout>
+
+            <ProgressBar
+                android:id="@+id/progressBarEraser"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="4dp"
+                android:layout_marginTop="8dp"
+                android:indeterminate="true"
+                android:visibility="gone" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

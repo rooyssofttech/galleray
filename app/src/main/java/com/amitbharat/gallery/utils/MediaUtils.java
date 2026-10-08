@@ -16,6 +16,7 @@ import com.amitbharat.gallery.data.models.MediaItem;
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -26,6 +27,10 @@ import java.util.Set;
 public class MediaUtils {
 
     public static List<MediaItem> queryAllMedia(Context context) {
+        return queryAllMedia(context, false);
+    }
+
+    public static List<MediaItem> queryAllMedia(Context context, boolean includeAudio) {
         List<MediaItem> mediaList = new ArrayList<>();
         Uri collectionUri;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -50,18 +55,30 @@ public class MediaUtils {
                 MediaStore.Images.Media.BUCKET_DISPLAY_NAME
         };
 
-        String selection = "(" + MediaStore.Files.FileColumns.MEDIA_TYPE + "="
-                + MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE
-                + " OR "
-                + MediaStore.Files.FileColumns.MEDIA_TYPE + "="
-                + MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO
-                + " OR "
-                + MediaStore.Files.FileColumns.MEDIA_TYPE + "="
-                + MediaStore.Files.FileColumns.MEDIA_TYPE_AUDIO
-                + " OR (" + MediaStore.Files.FileColumns.MIME_TYPE + " LIKE 'image/%' AND " + MediaStore.Files.FileColumns.SIZE + " > 0)"
-                + " OR (" + MediaStore.Files.FileColumns.MIME_TYPE + " LIKE 'video/%' AND " + MediaStore.Files.FileColumns.SIZE + " > 0)"
-                + " OR (" + MediaStore.Files.FileColumns.MIME_TYPE + " LIKE 'audio/%' AND " + MediaStore.Files.FileColumns.SIZE + " > 0)"
-                + ")";
+        String selection;
+        if (includeAudio) {
+            selection = "(" + MediaStore.Files.FileColumns.MEDIA_TYPE + "="
+                    + MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE
+                    + " OR "
+                    + MediaStore.Files.FileColumns.MEDIA_TYPE + "="
+                    + MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO
+                    + " OR "
+                    + MediaStore.Files.FileColumns.MEDIA_TYPE + "="
+                    + MediaStore.Files.FileColumns.MEDIA_TYPE_AUDIO
+                    + " OR (" + MediaStore.Files.FileColumns.MIME_TYPE + " LIKE 'image/%' AND " + MediaStore.Files.FileColumns.SIZE + " > 0)"
+                    + " OR (" + MediaStore.Files.FileColumns.MIME_TYPE + " LIKE 'video/%' AND " + MediaStore.Files.FileColumns.SIZE + " > 0)"
+                    + " OR (" + MediaStore.Files.FileColumns.MIME_TYPE + " LIKE 'audio/%' AND " + MediaStore.Files.FileColumns.SIZE + " > 0)"
+                    + ")";
+        } else {
+            selection = "(" + MediaStore.Files.FileColumns.MEDIA_TYPE + "="
+                    + MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE
+                    + " OR "
+                    + MediaStore.Files.FileColumns.MEDIA_TYPE + "="
+                    + MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO
+                    + " OR (" + MediaStore.Files.FileColumns.MIME_TYPE + " LIKE 'image/%' AND " + MediaStore.Files.FileColumns.SIZE + " > 0)"
+                    + " OR (" + MediaStore.Files.FileColumns.MIME_TYPE + " LIKE 'video/%' AND " + MediaStore.Files.FileColumns.SIZE + " > 0)"
+                    + ")";
+        }
 
         String sortOrder = MediaStore.Files.FileColumns.DATE_ADDED + " DESC";
 
@@ -102,6 +119,11 @@ public class MediaUtils {
                     boolean isAudio = !isVideo && (mediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_AUDIO
                             || (mime != null && mime.startsWith("audio/"))
                             || (name != null && isAudioExtension(name)));
+
+                    if (isAudio && !includeAudio) {
+                        continue;
+                    }
+
                     int width = cursor.getInt(widthCol);
                     int height = cursor.getInt(heightCol);
                     long duration = ((isVideo || isAudio) && durCol != -1) ? cursor.getLong(durCol) : 0;
@@ -324,7 +346,13 @@ public class MediaUtils {
             }
         }
 
-        return new ArrayList<>(folderMap.values());
+        List<FolderItem> folderList = new ArrayList<>(folderMap.values());
+        Collections.sort(folderList, (f1, f2) -> {
+            String name1 = f1.getFolderName() != null ? f1.getFolderName() : "";
+            String name2 = f2.getFolderName() != null ? f2.getFolderName() : "";
+            return name1.compareToIgnoreCase(name2);
+        });
+        return folderList;
     }
 
     public static String formatDuration(long millis) {

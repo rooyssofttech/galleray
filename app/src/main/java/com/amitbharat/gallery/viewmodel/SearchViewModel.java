@@ -31,7 +31,7 @@ public class SearchViewModel extends AndroidViewModel {
 
     public void loadAllMedia() {
         executor.execute(() -> {
-            allCachedMedia = MediaUtils.queryAllMedia(getApplication());
+            allCachedMedia = MediaUtils.queryAllMedia(getApplication(), true);
             searchResultsLive.postValue(allCachedMedia);
         });
     }

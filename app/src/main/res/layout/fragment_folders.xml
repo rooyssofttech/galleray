@@ -10,65 +10,6 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Smart Albums Filter Chips -->
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:scrollbars="none"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="8dp">
-
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/chipGroupSmartAlbums"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:singleSelection="true">
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipAll"
-                    style="@style/Widget.Gallery.Chip"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="@string/album_all" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipCamera"
-                    style="@style/Widget.Gallery.Chip"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/album_camera" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipScreenshots"
-                    style="@style/Widget.Gallery.Chip"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/album_screenshots" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipDownloads"
-                    style="@style/Widget.Gallery.Chip"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/album_downloads" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipVideos"
-                    style="@style/Widget.Gallery.Chip"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/album_videos" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipFavorites"
-                    style="@style/Widget.Gallery.Chip"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/album_favorites" />
-
-            </com.google.android.material.chip.ChipGroup>
-        </HorizontalScrollView>
 
         <FrameLayout
             android:layout_width="match_parent"

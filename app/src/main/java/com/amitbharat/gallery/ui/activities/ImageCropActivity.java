@@ -23,17 +23,25 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.amitbharat.gallery.R;
 import com.amitbharat.gallery.databinding.ActivityImageCropBinding;
 import com.amitbharat.gallery.ui.custom.CropImageView;
+import com.amitbharat.gallery.utils.DeviceAiEditorHelper;
 import com.amitbharat.gallery.utils.FileUtils;
 import com.amitbharat.gallery.utils.ImageEnhancer;
+import com.amitbharat.gallery.utils.MagicEraserEngine;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.Stack;
 import java.util.concurrent.Executors;
+import androidx.annotation.Nullable;
+import android.content.Intent;
 
 public class ImageCropActivity extends AppCompatActivity {
+
+    private static final int REQUEST_CODE_DEVICE_AI = 2030;
 
     private ActivityImageCropBinding binding;
     private String imagePath;
     private Bitmap originalBitmap;
+    private final Stack<Bitmap> eraserUndoStack = new Stack<>();
 
     private float currentBrightness = 0f;
     private float currentContrast = 0f;
@@ -57,10 +65,12 @@ public class ImageCropActivity extends AppCompatActivity {
         loadImage();
         setupControls();
         setupEnhancements();
+        setupEraserControls();
     }
 
     private void setupToolbar() {
         binding.toolbar.setNavigationOnClickListener(v -> finish());
+        binding.btnDeviceAi.setOnClickListener(v -> DeviceAiEditorHelper.openDeviceAiEditor(this, imagePath, REQUEST_CODE_DEVICE_AI));
         binding.btnSaveConfig.setOnClickListener(v -> showAdvancedSaveOptionsDialog());
         binding.btnSave.setOnClickListener(v -> showQuickSaveDialog());
     }
@@ -81,7 +91,7 @@ public class ImageCropActivity extends AppCompatActivity {
     }
 
     private void setupControls() {
-        // Tab switching: Crop (0), Adjust (1), Filters (2)
+        // Tab switching: Crop (0), Adjust (1), Filters (2), Magic Eraser (3)
         binding.tabEditorMode.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
@@ -89,6 +99,17 @@ public class ImageCropActivity extends AppCompatActivity {
                 binding.sectionCrop.setVisibility(pos == 0 ? View.VISIBLE : View.GONE);
                 binding.sectionAdjust.setVisibility(pos == 1 ? View.VISIBLE : View.GONE);
                 binding.sectionFilters.setVisibility(pos == 2 ? View.VISIBLE : View.GONE);
+                binding.sectionEraser.setVisibility(pos == 3 ? View.VISIBLE : View.GONE);
+
+                if (pos == 0) {
+                    binding.cropImageView.setEditorMode(CropImageView.EditorMode.CROP);
+                } else if (pos == 1) {
+                    binding.cropImageView.setEditorMode(CropImageView.EditorMode.ADJUST);
+                } else if (pos == 2) {
+                    binding.cropImageView.setEditorMode(CropImageView.EditorMode.FILTERS);
+                } else if (pos == 3) {
+                    binding.cropImageView.setEditorMode(CropImageView.EditorMode.ERASER);
+                }
             }
 
             @Override public void onTabUnselected(TabLayout.Tab tab) {}
@@ -112,6 +133,76 @@ public class ImageCropActivity extends AppCompatActivity {
         binding.btnRotate.setOnClickListener(v -> binding.cropImageView.rotate90());
         binding.btnFlipH.setOnClickListener(v -> binding.cropImageView.flipHorizontal());
         binding.btnFlipV.setOnClickListener(v -> binding.cropImageView.flipVertical());
+    }
+
+    private void setupEraserControls() {
+        binding.sliderEraserBrush.addOnChangeListener((slider, value, fromUser) -> {
+            binding.cropImageView.setEraserBrushSize(value);
+            binding.tvEraserBrushSize.setText(Math.round(value) + "px");
+        });
+
+        binding.btnClearEraser.setOnClickListener(v -> binding.cropImageView.clearEraserStrokes());
+
+        binding.btnUndoEraser.setOnClickListener(v -> {
+            if (!eraserUndoStack.isEmpty()) {
+                Bitmap prev = eraserUndoStack.pop();
+                if (prev != null) {
+                    originalBitmap = prev;
+                    binding.cropImageView.setImageBitmap(originalBitmap);
+                    binding.cropImageView.clearEraserStrokes();
+                    Toast.makeText(this, "Undo applied", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(this, "No more undo steps", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        binding.btnApplyEraser.setOnClickListener(v -> {
+            if (!binding.cropImageView.hasEraserStrokes()) {
+                Toast.makeText(this, "Brush over any object or area to erase first", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (originalBitmap == null) return;
+
+            binding.progressBarEraser.setVisibility(View.VISIBLE);
+            binding.btnApplyEraser.setEnabled(false);
+
+            // Save state for undo
+            if (eraserUndoStack.size() >= 8) {
+                Bitmap old = eraserUndoStack.remove(0);
+                if (old != null && !old.isRecycled()) old.recycle();
+            }
+            eraserUndoStack.push(originalBitmap.copy(originalBitmap.getConfig() != null ? originalBitmap.getConfig() : Bitmap.Config.ARGB_8888, true));
+
+            Executors.newSingleThreadExecutor().execute(() -> {
+                try {
+                    Bitmap mask = binding.cropImageView.generateEraserMaskBitmap(
+                            originalBitmap.getWidth(),
+                            originalBitmap.getHeight()
+                    );
+                    Bitmap inpainted = MagicEraserEngine.eraseObject(originalBitmap, mask);
+                    if (mask != null && !mask.isRecycled()) mask.recycle();
+
+                    runOnUiThread(() -> {
+                        if (inpainted != null) {
+                            originalBitmap = inpainted;
+                            binding.cropImageView.setImageBitmap(originalBitmap);
+                            binding.cropImageView.clearEraserStrokes();
+                            Toast.makeText(this, "✨ Object erased seamlessly!", Toast.LENGTH_SHORT).show();
+                        }
+                        binding.progressBarEraser.setVisibility(View.GONE);
+                        binding.btnApplyEraser.setEnabled(true);
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    runOnUiThread(() -> {
+                        binding.progressBarEraser.setVisibility(View.GONE);
+                        binding.btnApplyEraser.setEnabled(true);
+                        Toast.makeText(this, "Failed to erase: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+                }
+            });
+        });
     }
 
     private void setupEnhancements() {
@@ -420,8 +511,23 @@ public class ImageCropActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_DEVICE_AI) {
+            loadImage();
+            Toast.makeText(this, "Updated from Device AI Editor", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
+        while (!eraserUndoStack.isEmpty()) {
+            Bitmap b = eraserUndoStack.pop();
+            if (b != null && !b.isRecycled()) {
+                b.recycle();
+            }
+        }
         if (originalBitmap != null && !originalBitmap.isRecycled()) {
             originalBitmap.recycle();
         }

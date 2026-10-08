@@ -27,6 +27,18 @@
     <!-- Install Unknown Packages permission for opening APK files -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.EDIT" />
+            <data android:mimeType="image/*" />
+        </intent>
+        <package android:name="com.miui.mediaeditor" />
+        <package android:name="com.miui.gallery" />
+        <package android:name="com.google.android.apps.photos" />
+        <package android:name="com.sec.android.app.editor" />
+        <package android:name="com.sec.android.mimage.photoretouching" />
+    </queries>
+
     <application
         android:name=".GalleryApplication"
         android:allowBackup="true"

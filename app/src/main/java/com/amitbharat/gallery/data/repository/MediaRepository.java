@@ -61,6 +61,11 @@ public class MediaRepository {
                 allMediaLive.postValue(items);
 
                 List<FolderItem> folders = MediaUtils.groupMediaByFolders(items);
+                Collections.sort(folders, (f1, f2) -> {
+                    String name1 = f1.getFolderName() != null ? f1.getFolderName() : "";
+                    String name2 = f2.getFolderName() != null ? f2.getFolderName() : "";
+                    return name1.compareToIgnoreCase(name2);
+                });
                 foldersLive.postValue(folders);
             } catch (Exception e) {
                 e.printStackTrace();
