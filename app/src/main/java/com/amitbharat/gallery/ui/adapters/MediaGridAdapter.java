@@ -30,6 +30,7 @@ public class MediaGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     public interface OnMediaClickListener {
         void onMediaClick(MediaItem item, int position);
         void onMediaLongClick(MediaItem item, int position);
+        default void onHeaderSelectToggle(int headerPosition, String dateTitle, List<MediaItem> groupItems) {}
     }
 
     private static final int TYPE_GRID = 0;
@@ -52,6 +53,41 @@ public class MediaGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             return mediaList.get(position).isHeader();
         }
         return false;
+    }
+
+    public List<MediaItem> getItemsForHeader(int headerPosition) {
+        List<MediaItem> items = new ArrayList<>();
+        if (headerPosition < 0 || headerPosition >= mediaList.size()) return items;
+        if (!mediaList.get(headerPosition).isHeader()) return items;
+        for (int i = headerPosition + 1; i < mediaList.size(); i++) {
+            MediaItem item = mediaList.get(i);
+            if (item.isHeader()) break;
+            items.add(item);
+        }
+        return items;
+    }
+
+    public boolean isHeaderAllSelected(int headerPosition) {
+        if (headerPosition < 0 || headerPosition >= mediaList.size()) return false;
+        int count = 0;
+        for (int i = headerPosition + 1; i < mediaList.size(); i++) {
+            MediaItem item = mediaList.get(i);
+            if (item.isHeader()) break;
+            count++;
+            if (!item.isSelected()) {
+                return false;
+            }
+        }
+        return count > 0;
+    }
+
+    public int findHeaderPositionBefore(int position) {
+        for (int i = position - 1; i >= 0; i--) {
+            if (i < mediaList.size() && mediaList.get(i).isHeader()) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     @Override
@@ -153,16 +189,10 @@ public class MediaGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     }
 
     public void clearAllSelections() {
-        for (int i = 0; i < mediaList.size(); i++) {
-            MediaItem item = mediaList.get(i);
-            if (item.isHeader()) continue;
-            if (item.isSelected()) {
-                item.setSelected(false);
-                Bundle b = new Bundle();
-                b.putBoolean(PAYLOAD_SELECTION, false);
-                notifyItemChanged(i, b);
-            }
+        for (MediaItem item : mediaList) {
+            item.setSelected(false);
         }
+        notifyDataSetChanged();
     }
 
     @Override
@@ -194,7 +224,7 @@ public class MediaGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position, @NonNull List<Object> payloads) {
         if (holder instanceof HeaderViewHolder) {
-            ((HeaderViewHolder) holder).bind(mediaList.get(position));
+            ((HeaderViewHolder) holder).bind(mediaList.get(position), position);
             return;
         }
         if (!payloads.isEmpty()) {
@@ -228,7 +258,7 @@ public class MediaGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         MediaItem item = mediaList.get(position);
         if (holder instanceof HeaderViewHolder) {
-            ((HeaderViewHolder) holder).bind(item);
+            ((HeaderViewHolder) holder).bind(item, position);
         } else if (holder instanceof GridViewHolder) {
             ((GridViewHolder) holder).bind(item);
         } else if (holder instanceof ListViewHolder) {
@@ -236,16 +266,43 @@ public class MediaGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         }
     }
 
-    static class HeaderViewHolder extends RecyclerView.ViewHolder {
+    class HeaderViewHolder extends RecyclerView.ViewHolder {
         TextView tvDateHeader;
+        ImageView btnSelectDateGroup;
 
         HeaderViewHolder(@NonNull View itemView) {
             super(itemView);
             tvDateHeader = itemView.findViewById(R.id.tvDateHeader);
+            btnSelectDateGroup = itemView.findViewById(R.id.btnSelectDateGroup);
+
+            View.OnClickListener toggleClick = v -> {
+                int pos = getAdapterPosition();
+                if (pos != RecyclerView.NO_POSITION && listener != null) {
+                    List<MediaItem> items = getItemsForHeader(pos);
+                    MediaItem hdr = mediaList.get(pos);
+                    listener.onHeaderSelectToggle(pos, hdr.getHeaderTitle(), items);
+                }
+            };
+
+            if (btnSelectDateGroup != null) {
+                btnSelectDateGroup.setOnClickListener(toggleClick);
+            }
+            itemView.setOnClickListener(toggleClick);
         }
 
-        void bind(MediaItem item) {
+        void bind(MediaItem item, int position) {
             tvDateHeader.setText(item.getHeaderTitle() != null ? item.getHeaderTitle() : "");
+            int pos = position >= 0 ? position : getAdapterPosition();
+            boolean allSelected = isHeaderAllSelected(pos);
+            if (btnSelectDateGroup != null) {
+                if (allSelected) {
+                    btnSelectDateGroup.setImageResource(R.drawable.ic_check_circle);
+                    btnSelectDateGroup.setAlpha(1.0f);
+                } else {
+                    btnSelectDateGroup.setImageResource(R.drawable.ic_check_circle_outline);
+                    btnSelectDateGroup.setAlpha(0.6f);
+                }
+            }
         }
     }
 

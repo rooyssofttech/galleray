@@ -428,9 +428,18 @@ public class FolderDetailActivity extends AppCompatActivity implements MediaGrid
         }
         isSelectionMode = !selectedItems.isEmpty();
         binding.bottomActionBar.setVisibility(isSelectionMode ? View.VISIBLE : View.GONE);
+        if (isSelectionMode) {
+            binding.toolbar.setSubtitle(selectedItems.size() + " selected");
+        } else {
+            binding.toolbar.setSubtitle(mediaItems.size() + (mediaItems.size() == 1 ? " item" : " items"));
+        }
         android.os.Bundle b = new android.os.Bundle();
         b.putBoolean(MediaGridAdapter.PAYLOAD_SELECTION, item.isSelected());
         adapter.notifyItemChanged(position, b);
+        int headerPos = adapter.findHeaderPositionBefore(position);
+        if (headerPos != -1) {
+            adapter.notifyItemChanged(headerPos);
+        }
     }
 
     private void clearSelection() {
@@ -440,6 +449,7 @@ public class FolderDetailActivity extends AppCompatActivity implements MediaGrid
         selectedItems.clear();
         isSelectionMode = false;
         binding.bottomActionBar.setVisibility(View.GONE);
+        binding.toolbar.setSubtitle(mediaItems.size() + (mediaItems.size() == 1 ? " item" : " items"));
         adapter.clearAllSelections();
     }
 
@@ -550,5 +560,31 @@ public class FolderDetailActivity extends AppCompatActivity implements MediaGrid
     public void onMediaLongClick(MediaItem item, int position) {
         if (item == null || item.isHeader()) return;
         toggleSelection(item, position);
+    }
+
+    @Override
+    public void onHeaderSelectToggle(int headerPosition, String dateTitle, List<MediaItem> groupItems) {
+        if (groupItems == null || groupItems.isEmpty()) return;
+        boolean allSelected = adapter.isHeaderAllSelected(headerPosition);
+        boolean newSelectState = !allSelected;
+        for (MediaItem m : groupItems) {
+            if (m.isHeader()) continue;
+            m.setSelected(newSelectState);
+            if (newSelectState) {
+                if (!selectedItems.contains(m)) {
+                    selectedItems.add(m);
+                }
+            } else {
+                selectedItems.remove(m);
+            }
+        }
+        isSelectionMode = !selectedItems.isEmpty();
+        binding.bottomActionBar.setVisibility(isSelectionMode ? View.VISIBLE : View.GONE);
+        if (isSelectionMode) {
+            binding.toolbar.setSubtitle(selectedItems.size() + " selected");
+        } else {
+            binding.toolbar.setSubtitle(mediaItems.size() + (mediaItems.size() == 1 ? " item" : " items"));
+        }
+        adapter.notifyItemRangeChanged(headerPosition, groupItems.size() + 1);
     }
 }

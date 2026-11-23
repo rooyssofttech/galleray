@@ -18,6 +18,7 @@ import com.amitbharat.gallery.ui.activities.ImageViewerActivity;
 import com.amitbharat.gallery.ui.activities.MainActivity;
 import com.amitbharat.gallery.ui.activities.VideoPlayerActivity;
 import com.amitbharat.gallery.ui.adapters.MediaGridAdapter;
+import com.amitbharat.gallery.utils.MediaUtils;
 import com.amitbharat.gallery.utils.PreferencesManager;
 import com.amitbharat.gallery.viewmodel.AllMediaViewModel;
 import java.util.ArrayList;
@@ -195,6 +196,10 @@ public class AllMediaFragment extends Fragment implements MediaGridAdapter.OnMed
             android.os.Bundle b = new android.os.Bundle();
             b.putBoolean(MediaGridAdapter.PAYLOAD_SELECTION, item.isSelected());
             adapter.notifyItemChanged(position, b);
+            int headerPos = adapter.findHeaderPositionBefore(position);
+            if (headerPos != -1) {
+                adapter.notifyItemChanged(headerPos);
+            }
         } else {
             if (item.isVideo()) {
                 Intent intent = new Intent(requireContext(), VideoPlayerActivity.class);
@@ -225,6 +230,19 @@ public class AllMediaFragment extends Fragment implements MediaGridAdapter.OnMed
         android.os.Bundle b = new android.os.Bundle();
         b.putBoolean(MediaGridAdapter.PAYLOAD_SELECTION, item.isSelected());
         adapter.notifyItemChanged(position, b);
+        int headerPos = adapter.findHeaderPositionBefore(position);
+        if (headerPos != -1) {
+            adapter.notifyItemChanged(headerPos);
+        }
+    }
+
+    @Override
+    public void onHeaderSelectToggle(int headerPosition, String dateTitle, List<MediaItem> groupItems) {
+        if (groupItems == null || groupItems.isEmpty()) return;
+        boolean allSelected = adapter.isHeaderAllSelected(headerPosition);
+        boolean newSelectState = !allSelected;
+        viewModel.toggleGroupSelection(groupItems, newSelectState);
+        adapter.notifyItemRangeChanged(headerPosition, groupItems.size() + 1);
     }
 
     @Override

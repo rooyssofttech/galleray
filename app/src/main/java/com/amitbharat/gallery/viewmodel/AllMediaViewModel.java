@@ -65,6 +65,29 @@ public class AllMediaViewModel extends AndroidViewModel {
         isSelectionMode.setValue(!current.isEmpty());
     }
 
+    public void toggleGroupSelection(List<MediaItem> items, boolean select) {
+        if (items == null || items.isEmpty()) return;
+        List<MediaItem> current = selectedItems.getValue();
+        if (current == null) current = new ArrayList<>();
+        if (select) {
+            for (MediaItem item : items) {
+                if (item.isHeader()) continue;
+                item.setSelected(true);
+                if (!current.contains(item)) {
+                    current.add(item);
+                }
+            }
+        } else {
+            for (MediaItem item : items) {
+                if (item.isHeader()) continue;
+                item.setSelected(false);
+                current.remove(item);
+            }
+        }
+        selectedItems.setValue(new ArrayList<>(current));
+        isSelectionMode.setValue(!current.isEmpty());
+    }
+
     public void selectAll(List<MediaItem> allItems) {
         if (allItems == null) return;
         List<MediaItem> selected = new ArrayList<>();
