@@ -87,7 +87,7 @@ public class MediaRepository {
                         foldersLive.postValue(folders);
                     }
 
-                    if (isDone) {
+                    if (isFirstPacket || isDone) {
                         isLoadingLive.postValue(false);
                     }
                 });

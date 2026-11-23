@@ -43,6 +43,8 @@ public class FolderDetailActivity extends AppCompatActivity implements MediaGrid
     private ActivityFolderDetailBinding binding;
     private FolderItem folderItem;
     private MediaGridAdapter adapter;
+    private com.amitbharat.gallery.ui.adapters.FolderGridAdapter subfolderAdapter;
+    private final List<FolderItem> subfolderList = new ArrayList<>();
     private final List<MediaItem> mediaItems = new ArrayList<>();
     private final List<MediaItem> selectedItems = new ArrayList<>();
     private boolean isSelectionMode = false;
@@ -71,10 +73,65 @@ public class FolderDetailActivity extends AppCompatActivity implements MediaGrid
         favoriteDao = AppDatabase.getInstance(this).favoriteDao();
 
         setupToolbar();
+        setupSubfolders();
         setupRecyclerView();
         setupSelectionActionBar();
         setupBackNavigation();
+        loadSubfolders();
         loadFolderMedia();
+    }
+
+    private void setupSubfolders() {
+        subfolderAdapter = new com.amitbharat.gallery.ui.adapters.FolderGridAdapter(this);
+        subfolderAdapter.setListener(subFolder -> {
+            Intent intent = new Intent(this, FolderDetailActivity.class);
+            intent.putExtra("folder_item", subFolder);
+            startActivity(intent);
+        });
+        binding.rvSubfolders.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        binding.rvSubfolders.setAdapter(subfolderAdapter);
+    }
+
+    private void loadSubfolders() {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            String path = folderItem.getFolderPath();
+            if (path == null) return;
+            File dir = new File(path);
+            if (!dir.exists() || !dir.isDirectory()) return;
+
+            File[] files = dir.listFiles();
+            List<FolderItem> found = new ArrayList<>();
+            if (files != null) {
+                for (File f : files) {
+                    if (f.isDirectory() && !f.getName().startsWith(".")) {
+                        long bucketId = f.getAbsolutePath().toLowerCase(java.util.Locale.ROOT).hashCode();
+                        File[] subFiles = f.listFiles();
+                        int count = subFiles != null ? subFiles.length : 0;
+                        android.net.Uri coverUri = android.net.Uri.fromFile(f);
+                        FolderItem fi = new FolderItem(bucketId, f.getName(), f.getAbsolutePath(), coverUri, f.getAbsolutePath(), count, 0, f.lastModified());
+                        found.add(fi);
+                    }
+                }
+            }
+
+            // Sort subfolders alphabetically (A-Z)
+            found.sort((f1, f2) -> {
+                String n1 = f1.getFolderName() != null ? f1.getFolderName() : "";
+                String n2 = f2.getFolderName() != null ? f2.getFolderName() : "";
+                return n1.compareToIgnoreCase(n2);
+            });
+
+            runOnUiThread(() -> {
+                subfolderList.clear();
+                subfolderList.addAll(found);
+                if (!subfolderList.isEmpty()) {
+                    binding.layoutSubfolders.setVisibility(View.VISIBLE);
+                    subfolderAdapter.submitList(new ArrayList<>(subfolderList));
+                } else {
+                    binding.layoutSubfolders.setVisibility(View.GONE);
+                }
+            });
+        });
     }
 
     @Override
@@ -170,9 +227,15 @@ public class FolderDetailActivity extends AppCompatActivity implements MediaGrid
         if (isLoadingMore || currentLoadedCount >= mediaItems.size()) return;
         isLoadingMore = true;
         int nextCount = Math.min(currentLoadedCount + LOAD_MORE_PAGE_SIZE, mediaItems.size());
-        List<MediaItem> more = new ArrayList<>(mediaItems.subList(currentLoadedCount, nextCount));
-        adapter.appendItems(more);
         currentLoadedCount = nextCount;
+        List<MediaItem> sub = new ArrayList<>(mediaItems.subList(0, nextCount));
+        List<MediaItem> withHeaders;
+        if (currentSort == FilterOptions.SortOrder.DATE_DESC || currentSort == FilterOptions.SortOrder.DATE_ASC) {
+            withHeaders = MediaUtils.insertDateHeaders(sub);
+        } else {
+            withHeaders = sub;
+        }
+        adapter.submitList(withHeaders);
         isLoadingMore = false;
     }
 
@@ -201,7 +264,14 @@ public class FolderDetailActivity extends AppCompatActivity implements MediaGrid
                 firstVisiblePos = ((LinearLayoutManager) currentLm).findFirstVisibleItemPosition();
             }
             if (isGrid) {
-                binding.recyclerViewMedia.setLayoutManager(new GridLayoutManager(this, cols));
+                GridLayoutManager gridLm = new GridLayoutManager(this, cols);
+                gridLm.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+                    @Override
+                    public int getSpanSize(int position) {
+                        return adapter != null && adapter.isHeader(position) ? cols : 1;
+                    }
+                });
+                binding.recyclerViewMedia.setLayoutManager(gridLm);
             } else {
                 binding.recyclerViewMedia.setLayoutManager(new LinearLayoutManager(this));
             }
@@ -407,10 +477,17 @@ public class FolderDetailActivity extends AppCompatActivity implements MediaGrid
                     int targetCount = Math.max(currentLoadedCount, INITIAL_PAGE_SIZE);
                     int displayCount = Math.min(targetCount, mediaItems.size());
                     currentLoadedCount = displayCount;
-                    adapter.submitList(new ArrayList<>(mediaItems.subList(0, displayCount)));
+                    List<MediaItem> sub = new ArrayList<>(mediaItems.subList(0, displayCount));
+                    List<MediaItem> withHeaders;
+                    if (currentSort == FilterOptions.SortOrder.DATE_DESC || currentSort == FilterOptions.SortOrder.DATE_ASC) {
+                        withHeaders = MediaUtils.insertDateHeaders(sub);
+                    } else {
+                        withHeaders = sub;
+                    }
+                    adapter.submitList(withHeaders);
                     binding.toolbar.setSubtitle(mediaItems.size() + (mediaItems.size() == 1 ? " item" : " items"));
 
-                    if (isDone) {
+                    if (isFirstPacket || isDone) {
                         binding.progressBar.setVisibility(View.GONE);
                         binding.swipeRefresh.setRefreshing(false);
                     }
@@ -443,6 +520,7 @@ public class FolderDetailActivity extends AppCompatActivity implements MediaGrid
 
     @Override
     public void onMediaClick(MediaItem item, int position) {
+        if (item == null || item.isHeader()) return;
         if (isSelectionMode) {
             toggleSelection(item, position);
         } else {
@@ -451,14 +529,18 @@ public class FolderDetailActivity extends AppCompatActivity implements MediaGrid
                 intent.putExtra("media_item", item);
                 startActivity(intent);
             } else if (item.isAudio()) {
-                com.amitbharat.gallery.utils.MediaHolder.setCurrentMediaList(mediaItems);
+                List<MediaItem> fullList = mediaItems;
+                com.amitbharat.gallery.utils.MediaHolder.setCurrentMediaList(fullList);
+                int actualPos = fullList.indexOf(item);
                 Intent intent = new Intent(this, AudioPlayerActivity.class);
-                intent.putExtra("current_position", position);
+                intent.putExtra("current_position", actualPos >= 0 ? actualPos : position);
                 startActivity(intent);
             } else {
-                com.amitbharat.gallery.utils.MediaHolder.setCurrentMediaList(mediaItems);
+                List<MediaItem> fullList = mediaItems;
+                com.amitbharat.gallery.utils.MediaHolder.setCurrentMediaList(fullList);
+                int actualPos = fullList.indexOf(item);
                 Intent intent = new Intent(this, ImageViewerActivity.class);
-                intent.putExtra("current_position", position);
+                intent.putExtra("current_position", actualPos >= 0 ? actualPos : 0);
                 startActivity(intent);
             }
         }
@@ -466,6 +548,7 @@ public class FolderDetailActivity extends AppCompatActivity implements MediaGrid
 
     @Override
     public void onMediaLongClick(MediaItem item, int position) {
+        if (item == null || item.isHeader()) return;
         toggleSelection(item, position);
     }
 }

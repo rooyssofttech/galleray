@@ -34,6 +34,7 @@ public class MediaGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
     private static final int TYPE_GRID = 0;
     private static final int TYPE_LIST = 1;
+    private static final int TYPE_HEADER = 2;
 
     private final Context context;
     private final List<MediaItem> mediaList = new ArrayList<>();
@@ -46,10 +47,21 @@ public class MediaGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         setStateRestorationPolicy(StateRestorationPolicy.PREVENT_WHEN_EMPTY);
     }
 
+    public boolean isHeader(int position) {
+        if (position >= 0 && position < mediaList.size()) {
+            return mediaList.get(position).isHeader();
+        }
+        return false;
+    }
+
     @Override
     public long getItemId(int position) {
         if (position >= 0 && position < mediaList.size()) {
-            return mediaList.get(position).getId();
+            MediaItem item = mediaList.get(position);
+            if (item.isHeader()) {
+                return item.getHeaderTitle() != null ? ("hdr_" + item.getHeaderTitle()).hashCode() : -1;
+            }
+            return item.getId();
         }
         return RecyclerView.NO_ID;
     }
@@ -87,12 +99,21 @@ public class MediaGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             public int getNewListSize() { return newList != null ? newList.size() : 0; }
             @Override
             public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-                return mediaList.get(oldItemPosition).equals(newList.get(newItemPosition));
+                MediaItem oldItem = mediaList.get(oldItemPosition);
+                MediaItem newItem = newList.get(newItemPosition);
+                if (oldItem.isHeader() || newItem.isHeader()) {
+                    return oldItem.isHeader() == newItem.isHeader() &&
+                            java.util.Objects.equals(oldItem.getHeaderTitle(), newItem.getHeaderTitle());
+                }
+                return oldItem.equals(newItem);
             }
             @Override
             public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
                 MediaItem oldItem = mediaList.get(oldItemPosition);
                 MediaItem newItem = newList.get(newItemPosition);
+                if (oldItem.isHeader() || newItem.isHeader()) {
+                    return java.util.Objects.equals(oldItem.getHeaderTitle(), newItem.getHeaderTitle());
+                }
                 return oldItem.isSelected() == newItem.isSelected() &&
                         oldItem.isFavorite() == newItem.isFavorite() &&
                         oldItem.getSize() == newItem.getSize();
@@ -134,6 +155,7 @@ public class MediaGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     public void clearAllSelections() {
         for (int i = 0; i < mediaList.size(); i++) {
             MediaItem item = mediaList.get(i);
+            if (item.isHeader()) continue;
             if (item.isSelected()) {
                 item.setSelected(false);
                 Bundle b = new Bundle();
@@ -145,6 +167,11 @@ public class MediaGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
     @Override
     public int getItemViewType(int position) {
+        if (position >= 0 && position < mediaList.size()) {
+            if (mediaList.get(position).isHeader()) {
+                return TYPE_HEADER;
+            }
+        }
         return isGridView ? TYPE_GRID : TYPE_LIST;
     }
 
@@ -152,7 +179,10 @@ public class MediaGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        if (viewType == TYPE_GRID) {
+        if (viewType == TYPE_HEADER) {
+            View view = inflater.inflate(R.layout.item_date_header, parent, false);
+            return new HeaderViewHolder(view);
+        } else if (viewType == TYPE_GRID) {
             View view = inflater.inflate(R.layout.item_media_grid, parent, false);
             return new GridViewHolder(view);
         } else {
@@ -163,6 +193,10 @@ public class MediaGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position, @NonNull List<Object> payloads) {
+        if (holder instanceof HeaderViewHolder) {
+            ((HeaderViewHolder) holder).bind(mediaList.get(position));
+            return;
+        }
         if (!payloads.isEmpty()) {
             for (Object payload : payloads) {
                 if (payload instanceof Bundle) {
@@ -193,10 +227,25 @@ public class MediaGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         MediaItem item = mediaList.get(position);
-        if (holder instanceof GridViewHolder) {
+        if (holder instanceof HeaderViewHolder) {
+            ((HeaderViewHolder) holder).bind(item);
+        } else if (holder instanceof GridViewHolder) {
             ((GridViewHolder) holder).bind(item);
         } else if (holder instanceof ListViewHolder) {
             ((ListViewHolder) holder).bind(item);
+        }
+    }
+
+    static class HeaderViewHolder extends RecyclerView.ViewHolder {
+        TextView tvDateHeader;
+
+        HeaderViewHolder(@NonNull View itemView) {
+            super(itemView);
+            tvDateHeader = itemView.findViewById(R.id.tvDateHeader);
+        }
+
+        void bind(MediaItem item) {
+            tvDateHeader.setText(item.getHeaderTitle() != null ? item.getHeaderTitle() : "");
         }
     }
 

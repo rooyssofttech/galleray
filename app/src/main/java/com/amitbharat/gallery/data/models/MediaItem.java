@@ -26,9 +26,27 @@ public class MediaItem implements Serializable {
     private boolean isSelected;
     private long bucketId;
     private String bucketDisplayName;
+    private boolean isHeader = false;
+    private String headerTitle;
 
     public MediaItem() {
     }
+
+    public static MediaItem createHeader(String title, long timestamp) {
+        MediaItem item = new MediaItem();
+        item.setId(title != null ? title.hashCode() : -1);
+        item.isHeader = true;
+        item.headerTitle = title;
+        item.dateAdded = timestamp;
+        item.dateModified = timestamp;
+        return item;
+    }
+
+    public boolean isHeader() { return isHeader; }
+    public void setHeader(boolean header) { isHeader = header; }
+
+    public String getHeaderTitle() { return headerTitle; }
+    public void setHeaderTitle(String headerTitle) { this.headerTitle = headerTitle; }
 
     public MediaItem(long id, Uri uri, String path, String displayName, long size, String mimeType,
                      long dateAdded, long dateModified, long duration, int width, int height,
@@ -140,11 +158,17 @@ public class MediaItem implements Serializable {
         if (this == o) return true;
         if (!(o instanceof MediaItem)) return false;
         MediaItem mediaItem = (MediaItem) o;
+        if (isHeader || mediaItem.isHeader) {
+            return isHeader == mediaItem.isHeader && Objects.equals(headerTitle, mediaItem.headerTitle);
+        }
         return id == mediaItem.id && Objects.equals(path, mediaItem.path);
     }
 
     @Override
     public int hashCode() {
+        if (isHeader) {
+            return Objects.hash(isHeader, headerTitle);
+        }
         return Objects.hash(id, path);
     }
 }

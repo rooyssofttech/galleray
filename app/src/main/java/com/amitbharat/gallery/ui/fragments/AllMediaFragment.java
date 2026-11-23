@@ -66,7 +66,7 @@ public class AllMediaFragment extends Fragment implements MediaGridAdapter.OnMed
             allMediaItems.clear();
             if (items != null) {
                 for (MediaItem item : items) {
-                    if (!item.isAudio()) {
+                    if (!item.isAudio() && !item.isHeader()) {
                         allMediaItems.add(item);
                     }
                 }
@@ -74,7 +74,9 @@ public class AllMediaFragment extends Fragment implements MediaGridAdapter.OnMed
             int targetCount = Math.max(currentLoadedCount, INITIAL_PAGE_SIZE);
             int displayCount = Math.min(targetCount, allMediaItems.size());
             currentLoadedCount = displayCount;
-            adapter.submitList(new ArrayList<>(allMediaItems.subList(0, displayCount)));
+            List<MediaItem> sub = new ArrayList<>(allMediaItems.subList(0, displayCount));
+            List<MediaItem> withHeaders = MediaUtils.insertDateHeaders(sub);
+            adapter.submitList(withHeaders);
             binding.emptyState.setVisibility(allMediaItems.isEmpty() ? View.VISIBLE : View.GONE);
         });
 
@@ -122,9 +124,10 @@ public class AllMediaFragment extends Fragment implements MediaGridAdapter.OnMed
         if (isLoadingMore || currentLoadedCount >= allMediaItems.size()) return;
         isLoadingMore = true;
         int nextCount = Math.min(currentLoadedCount + LOAD_MORE_PAGE_SIZE, allMediaItems.size());
-        List<MediaItem> more = new ArrayList<>(allMediaItems.subList(currentLoadedCount, nextCount));
-        adapter.appendItems(more);
         currentLoadedCount = nextCount;
+        List<MediaItem> sub = new ArrayList<>(allMediaItems.subList(0, nextCount));
+        List<MediaItem> withHeaders = MediaUtils.insertDateHeaders(sub);
+        adapter.submitList(withHeaders);
         isLoadingMore = false;
     }
 
@@ -163,7 +166,14 @@ public class AllMediaFragment extends Fragment implements MediaGridAdapter.OnMed
                 firstVisiblePos = ((LinearLayoutManager) currentLm).findFirstVisibleItemPosition();
             }
             if (isGrid) {
-                binding.recyclerViewMedia.setLayoutManager(new GridLayoutManager(requireContext(), cols));
+                GridLayoutManager gridLm = new GridLayoutManager(requireContext(), cols);
+                gridLm.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+                    @Override
+                    public int getSpanSize(int position) {
+                        return adapter != null && adapter.isHeader(position) ? cols : 1;
+                    }
+                });
+                binding.recyclerViewMedia.setLayoutManager(gridLm);
             } else {
                 binding.recyclerViewMedia.setLayoutManager(new LinearLayoutManager(requireContext()));
             }
@@ -179,6 +189,7 @@ public class AllMediaFragment extends Fragment implements MediaGridAdapter.OnMed
 
     @Override
     public void onMediaClick(MediaItem item, int position) {
+        if (item == null || item.isHeader()) return;
         if (Boolean.TRUE.equals(viewModel.getIsSelectionMode().getValue())) {
             viewModel.toggleSelection(item);
             android.os.Bundle b = new android.os.Bundle();
@@ -201,7 +212,7 @@ public class AllMediaFragment extends Fragment implements MediaGridAdapter.OnMed
                 com.amitbharat.gallery.utils.MediaHolder.setCurrentMediaList(fullList);
                 int actualPos = fullList.indexOf(item);
                 Intent intent = new Intent(requireContext(), ImageViewerActivity.class);
-                intent.putExtra("current_position", actualPos >= 0 ? actualPos : position);
+                intent.putExtra("current_position", actualPos >= 0 ? actualPos : 0);
                 startActivity(intent);
             }
         }
@@ -209,6 +220,7 @@ public class AllMediaFragment extends Fragment implements MediaGridAdapter.OnMed
 
     @Override
     public void onMediaLongClick(MediaItem item, int position) {
+        if (item == null || item.isHeader()) return;
         viewModel.toggleSelection(item);
         android.os.Bundle b = new android.os.Bundle();
         b.putBoolean(MediaGridAdapter.PAYLOAD_SELECTION, item.isSelected());

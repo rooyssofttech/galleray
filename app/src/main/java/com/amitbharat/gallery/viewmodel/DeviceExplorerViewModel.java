@@ -23,7 +23,7 @@ public class DeviceExplorerViewModel extends AndroidViewModel {
     private final MutableLiveData<List<String>> breadcrumbsLive = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<List<FileItem>> selectedFiles = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<Boolean> isSelectionMode = new MutableLiveData<>(false);
-    private FilterOptions.SortOrder currentSort = FilterOptions.SortOrder.NAME_ASC;
+    private FilterOptions.SortOrder currentSort = FilterOptions.SortOrder.DATE_DESC;
     private final Stack<String> pathHistory = new Stack<>();
 
     public DeviceExplorerViewModel(@NonNull Application application) {

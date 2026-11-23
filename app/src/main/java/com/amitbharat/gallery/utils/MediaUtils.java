@@ -546,6 +546,32 @@ public class MediaUtils {
         return folderList;
     }
 
+    public static List<MediaItem> insertDateHeaders(List<MediaItem> items) {
+        if (items == null || items.isEmpty()) return new ArrayList<>();
+        List<MediaItem> result = new ArrayList<>();
+        String currentHeader = null;
+        for (MediaItem item : items) {
+            if (item.isHeader()) continue;
+            long itemDate = item.getDateModified();
+            if (itemDate <= 0 || (item.getDateAdded() > 0 && item.getDateAdded() > itemDate)) {
+                itemDate = item.getDateAdded();
+            }
+            if (itemDate <= 0) {
+                itemDate = System.currentTimeMillis();
+            }
+            String dateLabel = DateUtils.formatDate(itemDate);
+            if (dateLabel == null || dateLabel.isEmpty()) {
+                dateLabel = "Earlier";
+            }
+            if (!dateLabel.equals(currentHeader)) {
+                currentHeader = dateLabel;
+                result.add(MediaItem.createHeader(dateLabel, itemDate));
+            }
+            result.add(item);
+        }
+        return result;
+    }
+
     public static String formatDuration(long millis) {
         long seconds = (millis / 1000) % 60;
         long minutes = (millis / (1000 * 60)) % 60;

@@ -72,6 +72,7 @@ public class SearchViewModel extends AndroidViewModel {
                     filtered.add(item);
                     if (filtered.size() == 60) {
                         searchResultsLive.postValue(new ArrayList<>(filtered));
+                        isSearchingLive.postValue(false);
                     }
                 }
             }

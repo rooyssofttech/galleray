@@ -10,7 +10,7 @@ public class DateUtils {
     private static final SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("MMM dd, yyyy, hh:mm a", Locale.getDefault());
     private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("hh:mm a", Locale.getDefault());
 
-    public static String formatDate(long millis) {
+    public static synchronized String formatDate(long millis) {
         if (millis <= 0) return "";
         Calendar itemCal = Calendar.getInstance();
         itemCal.setTimeInMillis(millis);
@@ -31,12 +31,12 @@ public class DateUtils {
         return DATE_FORMAT.format(new Date(millis));
     }
 
-    public static String formatDateTime(long millis) {
+    public static synchronized String formatDateTime(long millis) {
         if (millis <= 0) return "";
         return DATE_TIME_FORMAT.format(new Date(millis));
     }
 
-    public static String formatTime(long millis) {
+    public static synchronized String formatTime(long millis) {
         if (millis <= 0) return "";
         return TIME_FORMAT.format(new Date(millis));
     }

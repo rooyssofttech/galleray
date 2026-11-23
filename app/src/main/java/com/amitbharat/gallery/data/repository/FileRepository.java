@@ -138,6 +138,7 @@ public class FileRepository {
                                         List<FileItem> initialPacket = new ArrayList<>(results);
                                         sortFileList(initialPacket, sortOrder);
                                         currentFilesLive.postValue(initialPacket);
+                                        isLoadingLive.postValue(false);
                                     }
                                 }
                             }
@@ -210,20 +211,27 @@ public class FileRepository {
             if (o1.isDirectory() && !o2.isDirectory()) return -1;
             if (!o1.isDirectory() && o2.isDirectory()) return 1;
 
+            // When both are directories: always sort folders alphabetically
+            if (o1.isDirectory() && o2.isDirectory()) {
+                String n1 = o1.getName() != null ? o1.getName() : "";
+                String n2 = o2.getName() != null ? o2.getName() : "";
+                return n1.compareToIgnoreCase(n2);
+            }
+
             switch (sortOrder) {
                 case DATE_ASC:
                     return Long.compare(o1.getLastModified(), o2.getLastModified());
-                case DATE_DESC:
-                    return Long.compare(o2.getLastModified(), o1.getLastModified());
                 case NAME_DESC:
                     return o2.getName().compareToIgnoreCase(o1.getName());
+                case NAME_ASC:
+                    return o1.getName().compareToIgnoreCase(o2.getName());
                 case SIZE_DESC:
                     return Long.compare(o2.getSize(), o1.getSize());
                 case SIZE_ASC:
                     return Long.compare(o1.getSize(), o2.getSize());
-                case NAME_ASC:
+                case DATE_DESC:
                 default:
-                    return o1.getName().compareToIgnoreCase(o2.getName());
+                    return Long.compare(o2.getLastModified(), o1.getLastModified());
             }
         });
     }
