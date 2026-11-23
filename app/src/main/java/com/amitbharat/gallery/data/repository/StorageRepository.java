@@ -58,12 +58,15 @@ public class StorageRepository {
                 List<FileItem> emptyFolders = new ArrayList<>();
                 List<FileItem> cacheJunk = new ArrayList<>();
                 List<FileItem> apkFiles = new ArrayList<>();
-                Map<String, List<FileItem>> sizeAndNameMap = new HashMap<>();
+                Map<String, List<String>> sizeAndNameMap = new HashMap<>();
+
+                int[] progressCounter = new int[]{0};
+                long[] lastProgressPost = new long[]{System.currentTimeMillis()};
 
                 File root = Environment.getExternalStorageDirectory();
                 if (root != null && root.exists()) {
                     scanRecursive(root, catImages, catVideos, catAudio, catDocs, catApks, catArchives, catOthers,
-                            largeFiles, emptyFolders, cacheJunk, apkFiles, sizeAndNameMap, 0);
+                            largeFiles, emptyFolders, cacheJunk, apkFiles, sizeAndNameMap, 0, progressCounter, lastProgressPost);
                 }
 
                 List<StorageCategory> categories = new ArrayList<>();
@@ -76,9 +79,11 @@ public class StorageRepository {
                 categories.add(catOthers);
 
                 List<FileItem> duplicates = new ArrayList<>();
-                for (List<FileItem> group : sizeAndNameMap.values()) {
-                    if (group.size() > 1) {
-                        duplicates.addAll(group);
+                for (List<String> paths : sizeAndNameMap.values()) {
+                    if (paths.size() > 1) {
+                        for (String p : paths) {
+                            duplicates.add(new FileItem(new File(p), false));
+                        }
                     }
                 }
 
@@ -122,27 +127,28 @@ public class StorageRepository {
                                StorageCategory catDocs, StorageCategory catApks, StorageCategory catArchives,
                                StorageCategory catOthers, List<FileItem> largeFiles, List<FileItem> emptyFolders,
                                List<FileItem> cacheJunk, List<FileItem> apkFiles,
-                               Map<String, List<FileItem>> sizeAndNameMap, int depth) {
-        if (depth > 20 || dir == null || !dir.exists() || !dir.canRead()) return;
+                               Map<String, List<String>> sizeAndNameMap, int depth,
+                               int[] progressCounter, long[] lastProgressPost) {
+        if (depth > 8 || dir == null || !dir.exists() || !dir.canRead()) return;
         
         String dirName = dir.getName().toLowerCase(Locale.ROOT);
         if (dirName.startsWith(".") && !dir.equals(Environment.getExternalStorageDirectory())) {
             if (dirName.contains("thumb") || dirName.contains("cache")) {
-                cacheJunk.add(new FileItem(dir));
+                cacheJunk.add(new FileItem(dir, false));
             }
             return;
         }
-        if (dirName.equals("data") || dirName.equals("obb")) {
+        if (dirName.equals("data") || dirName.equals("obb") || dirName.equals(".git") || dirName.equals("node_modules")) {
             File parent = dir.getParentFile();
-            if (parent != null && parent.getName().equalsIgnoreCase("Android")) {
-                return; // Skip Android/data and Android/obb
+            if (parent != null && (parent.getName().equalsIgnoreCase("Android") || dirName.startsWith("."))) {
+                return; // Skip system internal app data
             }
         }
 
         File[] files = dir.listFiles();
         if (files == null || files.length == 0) {
             if (dir.isDirectory() && !dir.equals(Environment.getExternalStorageDirectory())) {
-                emptyFolders.add(new FileItem(dir));
+                emptyFolders.add(new FileItem(dir, false));
             }
             return;
         }
@@ -151,10 +157,11 @@ public class StorageRepository {
             if (f.isDirectory()) {
                 String subName = f.getName().toLowerCase(Locale.ROOT);
                 if (subName.contains(".thumb") || subName.equals(".cache") || subName.equals("cache") || subName.equals(".exo")) {
-                    cacheJunk.add(new FileItem(f));
+                    cacheJunk.add(new FileItem(f, false));
                 }
                 scanRecursive(f, catImages, catVideos, catAudio, catDocs, catApks, catArchives, catOthers,
-                        largeFiles, emptyFolders, cacheJunk, apkFiles, sizeAndNameMap, depth + 1);
+                        largeFiles, emptyFolders, cacheJunk, apkFiles, sizeAndNameMap, depth + 1,
+                        progressCounter, lastProgressPost);
             } else {
                 long len = f.length();
                 String ext = getExtension(f.getName());
@@ -163,26 +170,26 @@ public class StorageRepository {
                 if (ext.equals("tmp") || ext.equals("temp") || ext.equals("cache") || ext.equals("log") ||
                     ext.equals("bak") || ext.equals("dmp") || ext.equals("old") || ext.equals("0") ||
                     f.getName().startsWith("crash_") || f.getName().startsWith(".thumb")) {
-                    cacheJunk.add(new FileItem(f));
+                    cacheJunk.add(new FileItem(f, false));
                 }
 
                 // Check APK files
                 if ("apk".equals(ext)) {
-                    apkFiles.add(new FileItem(f));
+                    apkFiles.add(new FileItem(f, false));
                     catApks.setTotalBytes(catApks.getTotalBytes() + len);
                     catApks.setItemCount(catApks.getItemCount() + 1);
                 }
 
                 // Check large files (> 50MB)
                 if (len > 50 * 1024 * 1024) {
-                    largeFiles.add(new FileItem(f));
+                    largeFiles.add(new FileItem(f, false));
                 }
 
                 // Check duplicate candidates (same size and name)
                 if (len > 1024 * 10) { // greater than 10KB
                     String key = f.getName().toLowerCase(Locale.ROOT) + "_" + len;
-                    List<FileItem> list = sizeAndNameMap.computeIfAbsent(key, k -> new ArrayList<>());
-                    list.add(new FileItem(f));
+                    List<String> list = sizeAndNameMap.computeIfAbsent(key, k -> new ArrayList<>());
+                    list.add(f.getAbsolutePath());
                 }
 
                 if (isImageExt(ext)) {
@@ -204,6 +211,15 @@ public class StorageRepository {
                     catOthers.setTotalBytes(catOthers.getTotalBytes() + len);
                     catOthers.setItemCount(catOthers.getItemCount() + 1);
                 }
+            }
+
+            progressCounter[0]++;
+            long now = System.currentTimeMillis();
+            if (progressCounter[0] % 350 == 0 || (now - lastProgressPost[0] > 700)) {
+                lastProgressPost[0] = now;
+                cacheJunkLive.postValue(new ArrayList<>(cacheJunk));
+                apkJunkLive.postValue(new ArrayList<>(apkFiles));
+                emptyFoldersLive.postValue(new ArrayList<>(emptyFolders));
             }
         }
     }

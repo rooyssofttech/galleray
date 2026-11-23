@@ -18,21 +18,37 @@ public class FileItem implements Serializable {
     public FileItem() {}
 
     public FileItem(File file) {
+        this(file, false);
+    }
+
+    public FileItem(File file, boolean computeChildCount) {
         if (file != null) {
             this.name = file.getName();
             this.path = file.getAbsolutePath();
             this.isDirectory = file.isDirectory();
-            this.size = file.isDirectory() ? 0 : file.length();
+            this.size = this.isDirectory ? 0 : file.length();
             this.lastModified = file.lastModified();
-            this.isHidden = file.isHidden() || (this.name != null && this.name.startsWith("."));
+            this.isHidden = (this.name != null && this.name.startsWith("."));
             this.extension = extractExtension(this.name);
-            if (this.isDirectory) {
+            if (this.isDirectory && computeChildCount) {
                 String[] list = file.list();
                 this.childCount = list != null ? list.length : 0;
             } else {
-                this.childCount = 0;
+                this.childCount = this.isDirectory ? -1 : 0;
             }
         }
+    }
+
+    public FileItem(String name, String path, boolean isDirectory, long size, long lastModified) {
+        this.name = name != null ? name : "";
+        this.path = path != null ? path : "";
+        this.isDirectory = isDirectory;
+        this.size = size;
+        this.lastModified = lastModified;
+        this.extension = extractExtension(this.name);
+        this.isHidden = this.name.startsWith(".");
+        this.childCount = isDirectory ? -1 : 0;
+        this.isSelected = false;
     }
 
     public FileItem(String name, String path, boolean isDirectory, long size, long lastModified, String extension, boolean isHidden, int childCount) {

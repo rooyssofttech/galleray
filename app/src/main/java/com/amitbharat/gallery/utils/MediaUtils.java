@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
+import com.amitbharat.gallery.data.models.FilterOptions;
 import com.amitbharat.gallery.data.models.FolderItem;
 import com.amitbharat.gallery.data.models.MediaItem;
 import java.io.File;
@@ -26,12 +27,50 @@ import java.util.Set;
 
 public class MediaUtils {
 
+    public interface MediaPacketCallback {
+        void onPacketLoaded(List<MediaItem> packet, boolean isFirstPacket, boolean isDone);
+    }
+
+    public static String getSqlSortOrder(FilterOptions.SortOrder sortOrder) {
+        if (sortOrder == null) {
+            return MediaStore.Files.FileColumns.DATE_ADDED + " DESC";
+        }
+        switch (sortOrder) {
+            case DATE_ASC:
+                return MediaStore.Files.FileColumns.DATE_ADDED + " ASC";
+            case NAME_ASC:
+                return MediaStore.Files.FileColumns.DISPLAY_NAME + " COLLATE NOCASE ASC";
+            case NAME_DESC:
+                return MediaStore.Files.FileColumns.DISPLAY_NAME + " COLLATE NOCASE DESC";
+            case SIZE_DESC:
+                return MediaStore.Files.FileColumns.SIZE + " DESC";
+            case SIZE_ASC:
+                return MediaStore.Files.FileColumns.SIZE + " ASC";
+            case DATE_DESC:
+            default:
+                return MediaStore.Files.FileColumns.DATE_ADDED + " DESC";
+        }
+    }
+
     public static List<MediaItem> queryAllMedia(Context context) {
         return queryAllMedia(context, false);
     }
 
     public static List<MediaItem> queryAllMedia(Context context, boolean includeAudio) {
         List<MediaItem> mediaList = new ArrayList<>();
+        queryAllMediaProgressive(context, includeAudio, FilterOptions.SortOrder.DATE_DESC, 1000, (packet, isFirst, isDone) -> {
+            mediaList.addAll(packet);
+        });
+        return mediaList;
+    }
+
+    public static void queryAllMediaProgressive(
+            Context context,
+            boolean includeAudio,
+            FilterOptions.SortOrder sortOrder,
+            int packetSize,
+            MediaPacketCallback callback
+    ) {
         Uri collectionUri;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             collectionUri = MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL);
@@ -80,14 +119,17 @@ public class MediaUtils {
                     + ")";
         }
 
-        String sortOrder = MediaStore.Files.FileColumns.DATE_ADDED + " DESC";
+        String sqlSortOrder = getSqlSortOrder(sortOrder);
+        int currentBatchTarget = Math.max(20, packetSize);
+        List<MediaItem> buffer = new ArrayList<>(currentBatchTarget);
+        boolean isFirstPacket = true;
 
         try (Cursor cursor = context.getContentResolver().query(
                 collectionUri,
                 projection,
                 selection,
                 null,
-                sortOrder
+                sqlSortOrder
         )) {
             if (cursor != null) {
                 int idCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns._ID);
@@ -139,11 +181,23 @@ public class MediaUtils {
                         contentUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
                     }
 
-                    if (path != null && new File(path).exists()) {
+                    // Fast non-blocking validation from database metadata instead of heavy filesystem stat
+                    if (path != null && !path.isEmpty()) {
                         MediaItem item = new MediaItem(id, contentUri, path, name, size, mime,
                                 dateAdded, dateModified, duration, width, height, isVideo, bucketId, bucketName);
                         item.setAudio(isAudio);
-                        mediaList.add(item);
+                        buffer.add(item);
+
+                        if (buffer.size() >= currentBatchTarget) {
+                            if (callback != null) {
+                                callback.onPacketLoaded(new ArrayList<>(buffer), isFirstPacket, false);
+                            }
+                            buffer.clear();
+                            isFirstPacket = false;
+                            if (currentBatchTarget < 200) {
+                                currentBatchTarget = 150;
+                            }
+                        }
                     }
                 }
             }
@@ -151,10 +205,145 @@ public class MediaUtils {
             e.printStackTrace();
         }
 
-        // Also scan Telegram download directories directly on disk
-        scanTelegramDirectories(context, mediaList);
+        // Deliver final remaining packet
+        if (callback != null) {
+            callback.onPacketLoaded(new ArrayList<>(buffer), isFirstPacket, true);
+        }
+    }
 
-        return mediaList;
+    public static void queryFolderMediaProgressive(
+            Context context,
+            long bucketId,
+            String folderPath,
+            FilterOptions.SortOrder sortOrder,
+            int packetSize,
+            MediaPacketCallback callback
+    ) {
+        Uri collectionUri;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            collectionUri = MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL);
+        } else {
+            collectionUri = MediaStore.Files.getContentUri("external");
+        }
+
+        String[] projection = new String[]{
+                MediaStore.Files.FileColumns._ID,
+                MediaStore.Files.FileColumns.DATA,
+                MediaStore.Files.FileColumns.DISPLAY_NAME,
+                MediaStore.Files.FileColumns.SIZE,
+                MediaStore.Files.FileColumns.MIME_TYPE,
+                MediaStore.Files.FileColumns.DATE_ADDED,
+                MediaStore.Files.FileColumns.DATE_MODIFIED,
+                MediaStore.Files.FileColumns.MEDIA_TYPE,
+                MediaStore.Files.FileColumns.WIDTH,
+                MediaStore.Files.FileColumns.HEIGHT,
+                MediaStore.Video.VideoColumns.DURATION,
+                MediaStore.Images.Media.BUCKET_ID,
+                MediaStore.Images.Media.BUCKET_DISPLAY_NAME
+        };
+
+        String baseTypeCondition = "(" + MediaStore.Files.FileColumns.MEDIA_TYPE + "="
+                + MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE
+                + " OR "
+                + MediaStore.Files.FileColumns.MEDIA_TYPE + "="
+                + MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO
+                + " OR (" + MediaStore.Files.FileColumns.MIME_TYPE + " LIKE 'image/%' AND " + MediaStore.Files.FileColumns.SIZE + " > 0)"
+                + " OR (" + MediaStore.Files.FileColumns.MIME_TYPE + " LIKE 'video/%' AND " + MediaStore.Files.FileColumns.SIZE + " > 0)"
+                + ")";
+
+        String selection;
+        String[] selectionArgs = null;
+        if (bucketId != 0 && folderPath != null && !folderPath.isEmpty()) {
+            selection = baseTypeCondition + " AND (" + MediaStore.Images.Media.BUCKET_ID + " = ? OR " + MediaStore.Files.FileColumns.DATA + " LIKE ?)";
+            selectionArgs = new String[]{ String.valueOf(bucketId), folderPath + "/%" };
+        } else if (bucketId != 0) {
+            selection = baseTypeCondition + " AND (" + MediaStore.Images.Media.BUCKET_ID + " = ?)";
+            selectionArgs = new String[]{ String.valueOf(bucketId) };
+        } else if (folderPath != null && !folderPath.isEmpty()) {
+            selection = baseTypeCondition + " AND (" + MediaStore.Files.FileColumns.DATA + " LIKE ?)";
+            selectionArgs = new String[]{ folderPath + "/%" };
+        } else {
+            selection = baseTypeCondition;
+        }
+
+        String sqlSortOrder = getSqlSortOrder(sortOrder);
+        int currentBatchTarget = Math.max(20, packetSize);
+        List<MediaItem> buffer = new ArrayList<>(currentBatchTarget);
+        boolean isFirstPacket = true;
+
+        try (Cursor cursor = context.getContentResolver().query(
+                collectionUri,
+                projection,
+                selection,
+                selectionArgs,
+                sqlSortOrder
+        )) {
+            if (cursor != null) {
+                int idCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns._ID);
+                int dataCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATA);
+                int nameCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DISPLAY_NAME);
+                int sizeCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.SIZE);
+                int mimeCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.MIME_TYPE);
+                int dateAddCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATE_ADDED);
+                int dateModCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATE_MODIFIED);
+                int mediaTypeCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.MEDIA_TYPE);
+                int widthCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.WIDTH);
+                int heightCol = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.HEIGHT);
+                int durCol = cursor.getColumnIndex(MediaStore.Video.VideoColumns.DURATION);
+                int bucketIdCol = cursor.getColumnIndex(MediaStore.Images.Media.BUCKET_ID);
+                int bucketNameCol = cursor.getColumnIndex(MediaStore.Images.Media.BUCKET_DISPLAY_NAME);
+
+                while (cursor.moveToNext()) {
+                    long id = cursor.getLong(idCol);
+                    String path = cursor.getString(dataCol);
+                    String name = cursor.getString(nameCol);
+                    long size = cursor.getLong(sizeCol);
+                    String mime = cursor.getString(mimeCol);
+                    long dateAdded = cursor.getLong(dateAddCol) * 1000;
+                    long dateModified = cursor.getLong(dateModCol) * 1000;
+                    int mediaType = cursor.getInt(mediaTypeCol);
+                    boolean isVideo = mediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO
+                            || (mime != null && mime.startsWith("video/"))
+                            || (name != null && isVideoExtension(name));
+
+                    int width = cursor.getInt(widthCol);
+                    int height = cursor.getInt(heightCol);
+                    long duration = (isVideo && durCol != -1) ? cursor.getLong(durCol) : 0;
+                    long bId = bucketIdCol != -1 ? cursor.getLong(bucketIdCol) : bucketId;
+                    String bucketName = bucketNameCol != -1 ? cursor.getString(bucketNameCol) : "";
+
+                    Uri contentUri;
+                    if (isVideo) {
+                        contentUri = ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id);
+                    } else {
+                        contentUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+                    }
+
+                    if (path != null && !path.isEmpty()) {
+                        MediaItem item = new MediaItem(id, contentUri, path, name, size, mime,
+                                dateAdded, dateModified, duration, width, height, isVideo, bId, bucketName);
+                        buffer.add(item);
+
+                        if (buffer.size() >= currentBatchTarget) {
+                            if (callback != null) {
+                                callback.onPacketLoaded(new ArrayList<>(buffer), isFirstPacket, false);
+                            }
+                            buffer.clear();
+                            isFirstPacket = false;
+                            if (currentBatchTarget < 200) {
+                                currentBatchTarget = 150;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (callback != null) {
+            callback.onPacketLoaded(new ArrayList<>(buffer), isFirstPacket, true);
+        }
     }
 
     public static void scanTelegramDirectories(Context context, List<MediaItem> mediaList) {
@@ -280,13 +469,15 @@ public class MediaUtils {
         for (MediaItem item : mediaItems) {
             String folderPath = "";
             String folderName = item.getBucketDisplayName();
-            if (item.getPath() != null) {
-                File file = new File(item.getPath());
-                File parent = file.getParentFile();
-                if (parent != null) {
-                    folderPath = parent.getAbsolutePath();
+            String path = item.getPath();
+            if (path != null) {
+                int lastSlash = path.lastIndexOf('/');
+                if (lastSlash > 0) {
+                    folderPath = path.substring(0, lastSlash);
                     if (folderName == null || folderName.isEmpty()) {
-                        folderName = parent.getName();
+                        int prevSlash = folderPath.lastIndexOf('/');
+                        folderName = (prevSlash >= 0 && prevSlash < folderPath.length() - 1)
+                                ? folderPath.substring(prevSlash + 1) : folderPath;
                     }
                 }
             }

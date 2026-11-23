@@ -53,6 +53,7 @@ public class FolderDetailActivity extends AppCompatActivity implements MediaGrid
     private static final int LOAD_MORE_PAGE_SIZE = 60;
     private int currentLoadedCount = 0;
     private boolean isLoadingMore = false;
+    private final AtomicInteger folderLoadReqId = new AtomicInteger(0);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,7 +67,7 @@ public class FolderDetailActivity extends AppCompatActivity implements MediaGrid
             return;
         }
 
-        mediaRepository = new MediaRepository(this);
+        mediaRepository = MediaRepository.getInstance(this);
         favoriteDao = AppDatabase.getInstance(this).favoriteDao();
 
         setupToolbar();
@@ -79,7 +80,9 @@ public class FolderDetailActivity extends AppCompatActivity implements MediaGrid
     @Override
     protected void onResume() {
         super.onResume();
-        loadFolderMedia();
+        if (mediaItems.isEmpty()) {
+            loadFolderMedia();
+        }
     }
 
     private void setupBackNavigation() {
@@ -140,7 +143,10 @@ public class FolderDetailActivity extends AppCompatActivity implements MediaGrid
         adapter.setListener(this);
         setupLayoutManager();
         binding.recyclerViewMedia.setAdapter(adapter);
-        binding.swipeRefresh.setOnRefreshListener(this::loadFolderMedia);
+        binding.swipeRefresh.setOnRefreshListener(() -> {
+            currentLoadedCount = 0;
+            loadFolderMedia();
+        });
 
         binding.recyclerViewMedia.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -352,7 +358,9 @@ public class FolderDetailActivity extends AppCompatActivity implements MediaGrid
         }
         isSelectionMode = !selectedItems.isEmpty();
         binding.bottomActionBar.setVisibility(isSelectionMode ? View.VISIBLE : View.GONE);
-        adapter.notifyItemChanged(position);
+        android.os.Bundle b = new android.os.Bundle();
+        b.putBoolean(MediaGridAdapter.PAYLOAD_SELECTION, item.isSelected());
+        adapter.notifyItemChanged(position, b);
     }
 
     private void clearSelection() {
@@ -362,13 +370,13 @@ public class FolderDetailActivity extends AppCompatActivity implements MediaGrid
         selectedItems.clear();
         isSelectionMode = false;
         binding.bottomActionBar.setVisibility(View.GONE);
-        adapter.notifyDataSetChanged();
+        adapter.clearAllSelections();
     }
 
     private void loadFolderMedia() {
         binding.progressBar.setVisibility(View.VISIBLE);
+        final int reqId = folderLoadReqId.incrementAndGet();
         Executors.newSingleThreadExecutor().execute(() -> {
-            List<MediaItem> allMedia = MediaUtils.queryAllMedia(this);
             List<FavoriteEntity> favs = favoriteDao.getAllFavoritesSync();
             Set<String> favPaths = new HashSet<>();
             for (FavoriteEntity f : favs) {
@@ -377,39 +385,36 @@ public class FolderDetailActivity extends AppCompatActivity implements MediaGrid
 
             String targetFolder = folderItem.getFolderPath();
             long targetBucketId = folderItem.getBucketId();
-            List<MediaItem> folderMedia = new ArrayList<>();
+            List<MediaItem> accumulated = new ArrayList<>();
 
-            for (MediaItem item : allMedia) {
-                if (item.getPath() != null && favPaths.contains(item.getPath())) {
-                    item.setFavorite(true);
+            MediaUtils.queryFolderMediaProgressive(this, targetBucketId, targetFolder, currentSort, 60, (packet, isFirstPacket, isDone) -> {
+                if (reqId != folderLoadReqId.get()) {
+                    return; // Cancelled by newer request
                 }
 
-                boolean match = false;
-                if (item.getPath() != null && targetFolder != null && !targetFolder.isEmpty()) {
-                    File parent = new File(item.getPath()).getParentFile();
-                    if (parent != null && parent.getAbsolutePath().equalsIgnoreCase(targetFolder)) {
-                        match = true;
+                for (MediaItem item : packet) {
+                    if (item.getPath() != null && favPaths.contains(item.getPath())) {
+                        item.setFavorite(true);
                     }
                 }
-                if (!match && targetBucketId != 0 && item.getBucketId() == targetBucketId) {
-                    match = true;
-                }
-                if (match) {
-                    folderMedia.add(item);
-                }
-            }
 
-            MediaRepository.sortMediaList(folderMedia, currentSort);
+                accumulated.addAll(packet);
 
-            runOnUiThread(() -> {
-                mediaItems.clear();
-                mediaItems.addAll(folderMedia);
-                int initialCount = Math.min(INITIAL_PAGE_SIZE, mediaItems.size());
-                currentLoadedCount = initialCount;
-                adapter.submitList(new ArrayList<>(mediaItems.subList(0, initialCount)));
-                binding.progressBar.setVisibility(View.GONE);
-                binding.swipeRefresh.setRefreshing(false);
-                binding.toolbar.setSubtitle(mediaItems.size() + (mediaItems.size() == 1 ? " item" : " items"));
+                runOnUiThread(() -> {
+                    if (reqId != folderLoadReqId.get()) return;
+                    mediaItems.clear();
+                    mediaItems.addAll(accumulated);
+                    int targetCount = Math.max(currentLoadedCount, INITIAL_PAGE_SIZE);
+                    int displayCount = Math.min(targetCount, mediaItems.size());
+                    currentLoadedCount = displayCount;
+                    adapter.submitList(new ArrayList<>(mediaItems.subList(0, displayCount)));
+                    binding.toolbar.setSubtitle(mediaItems.size() + (mediaItems.size() == 1 ? " item" : " items"));
+
+                    if (isDone) {
+                        binding.progressBar.setVisibility(View.GONE);
+                        binding.swipeRefresh.setRefreshing(false);
+                    }
+                });
             });
         });
     }
@@ -427,10 +432,8 @@ public class FolderDetailActivity extends AppCompatActivity implements MediaGrid
             else if (checkedId == R.id.rbSizeDesc) currentSort = FilterOptions.SortOrder.SIZE_DESC;
             else if (checkedId == R.id.rbSizeAsc) currentSort = FilterOptions.SortOrder.SIZE_ASC;
 
-            MediaRepository.sortMediaList(mediaItems, currentSort);
-            int initialCount = Math.min(INITIAL_PAGE_SIZE, mediaItems.size());
-            currentLoadedCount = initialCount;
-            adapter.submitList(new ArrayList<>(mediaItems.subList(0, initialCount)));
+            currentLoadedCount = 0;
+            loadFolderMedia();
             dialog.dismiss();
         });
 

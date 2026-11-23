@@ -1,6 +1,7 @@
 package com.amitbharat.gallery.data.repository;
 
 import android.content.Context;
+import android.net.Uri;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import com.amitbharat.gallery.data.database.AppDatabase;
@@ -49,7 +50,7 @@ public class FileRepository {
                             if (!showHidden && (file.isHidden() || file.getName().startsWith("."))) {
                                 continue;
                             }
-                            fileList.add(new FileItem(file));
+                            fileList.add(new FileItem(file, false));
                         }
                     }
                 }
@@ -69,10 +70,90 @@ public class FileRepository {
         executor.execute(() -> {
             List<FileItem> results = new ArrayList<>();
             try {
-                File root = android.os.Environment.getExternalStorageDirectory();
-                if (root != null && root.exists()) {
-                    scanCategoryRecursively(root, category.toLowerCase(java.util.Locale.ROOT), results, 0);
+                Uri filesUri;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                    filesUri = android.provider.MediaStore.Files.getContentUri(android.provider.MediaStore.VOLUME_EXTERNAL);
+                } else {
+                    filesUri = android.provider.MediaStore.Files.getContentUri("external");
                 }
+
+                String[] projection = new String[]{
+                        android.provider.MediaStore.Files.FileColumns._ID,
+                        android.provider.MediaStore.Files.FileColumns.DATA,
+                        android.provider.MediaStore.Files.FileColumns.DISPLAY_NAME,
+                        android.provider.MediaStore.Files.FileColumns.SIZE,
+                        android.provider.MediaStore.Files.FileColumns.DATE_MODIFIED
+                };
+
+                String selection = null;
+                String cat = category != null ? category.toLowerCase(java.util.Locale.ROOT) : "";
+                if ("apks".equals(cat)) {
+                    selection = android.provider.MediaStore.Files.FileColumns.DISPLAY_NAME + " LIKE '%.apk' OR "
+                            + android.provider.MediaStore.Files.FileColumns.MIME_TYPE + " = 'application/vnd.android.package-archive'";
+                } else if ("documents".equals(cat)) {
+                    selection = android.provider.MediaStore.Files.FileColumns.DISPLAY_NAME + " LIKE '%.pdf' OR "
+                            + android.provider.MediaStore.Files.FileColumns.DISPLAY_NAME + " LIKE '%.doc%' OR "
+                            + android.provider.MediaStore.Files.FileColumns.DISPLAY_NAME + " LIKE '%.xls%' OR "
+                            + android.provider.MediaStore.Files.FileColumns.DISPLAY_NAME + " LIKE '%.ppt%' OR "
+                            + android.provider.MediaStore.Files.FileColumns.DISPLAY_NAME + " LIKE '%.txt' OR "
+                            + android.provider.MediaStore.Files.FileColumns.DISPLAY_NAME + " LIKE '%.epub' OR "
+                            + android.provider.MediaStore.Files.FileColumns.DISPLAY_NAME + " LIKE '%.rtf' OR "
+                            + android.provider.MediaStore.Files.FileColumns.DISPLAY_NAME + " LIKE '%.csv' OR "
+                            + android.provider.MediaStore.Files.FileColumns.MIME_TYPE + " LIKE 'application/pdf' OR "
+                            + android.provider.MediaStore.Files.FileColumns.MIME_TYPE + " LIKE 'text/%'";
+                } else if ("audio".equals(cat)) {
+                    selection = android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE + " = "
+                            + android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_AUDIO + " OR "
+                            + android.provider.MediaStore.Files.FileColumns.DISPLAY_NAME + " LIKE '%.mp3' OR "
+                            + android.provider.MediaStore.Files.FileColumns.DISPLAY_NAME + " LIKE '%.m4a' OR "
+                            + android.provider.MediaStore.Files.FileColumns.DISPLAY_NAME + " LIKE '%.wav' OR "
+                            + android.provider.MediaStore.Files.FileColumns.MIME_TYPE + " LIKE 'audio/%'";
+                } else if ("archives".equals(cat)) {
+                    selection = android.provider.MediaStore.Files.FileColumns.DISPLAY_NAME + " LIKE '%.zip' OR "
+                            + android.provider.MediaStore.Files.FileColumns.DISPLAY_NAME + " LIKE '%.rar' OR "
+                            + android.provider.MediaStore.Files.FileColumns.DISPLAY_NAME + " LIKE '%.7z' OR "
+                            + android.provider.MediaStore.Files.FileColumns.DISPLAY_NAME + " LIKE '%.tar' OR "
+                            + android.provider.MediaStore.Files.FileColumns.DISPLAY_NAME + " LIKE '%.gz' OR "
+                            + android.provider.MediaStore.Files.FileColumns.MIME_TYPE + " LIKE 'application/zip'";
+                }
+
+                if (selection != null) {
+                    try (android.database.Cursor cursor = context.getContentResolver().query(
+                            filesUri, projection, selection, null,
+                            android.provider.MediaStore.Files.FileColumns.DATE_MODIFIED + " DESC")) {
+                        if (cursor != null) {
+                            int dataCol = cursor.getColumnIndexOrThrow(android.provider.MediaStore.Files.FileColumns.DATA);
+                            int nameCol = cursor.getColumnIndexOrThrow(android.provider.MediaStore.Files.FileColumns.DISPLAY_NAME);
+                            int sizeCol = cursor.getColumnIndexOrThrow(android.provider.MediaStore.Files.FileColumns.SIZE);
+                            int dateCol = cursor.getColumnIndexOrThrow(android.provider.MediaStore.Files.FileColumns.DATE_MODIFIED);
+
+                            while (cursor.moveToNext()) {
+                                String path = cursor.getString(dataCol);
+                                String name = cursor.getString(nameCol);
+                                long size = cursor.getLong(sizeCol);
+                                long lastMod = cursor.getLong(dateCol) * 1000;
+                                if (path != null && !path.isEmpty()) {
+                                    results.add(new FileItem(name, path, false, size, lastMod));
+                                    if (results.size() == 60) {
+                                        List<FileItem> initialPacket = new ArrayList<>(results);
+                                        sortFileList(initialPacket, sortOrder);
+                                        currentFilesLive.postValue(initialPacket);
+                                    }
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                if (results.isEmpty()) {
+                    File root = android.os.Environment.getExternalStorageDirectory();
+                    if (root != null && root.exists()) {
+                        scanCategoryRecursively(root, cat, results, 0);
+                    }
+                }
+
                 sortFileList(results, sortOrder);
                 currentFilesLive.postValue(results);
             } catch (Exception e) {
@@ -84,7 +165,7 @@ public class FileRepository {
     }
 
     private void scanCategoryRecursively(File dir, String category, List<FileItem> out, int depth) {
-        if (depth > 20 || dir == null || !dir.exists() || !dir.canRead()) return;
+        if (depth > 6 || dir == null || !dir.exists() || !dir.canRead() || out.size() >= 1000) return;
         
         String dirName = dir.getName().toLowerCase(java.util.Locale.ROOT);
         if (dirName.startsWith(".") && !dir.equals(android.os.Environment.getExternalStorageDirectory())) return;
@@ -116,7 +197,7 @@ public class FileRepository {
                 }
 
                 if (matches) {
-                    out.add(new FileItem(f));
+                    out.add(new FileItem(f, false));
                 }
             }
         }

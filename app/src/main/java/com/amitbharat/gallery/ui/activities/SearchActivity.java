@@ -18,6 +18,8 @@ import com.amitbharat.gallery.viewmodel.SearchViewModel;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import android.os.Handler;
+import android.os.Looper;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +34,8 @@ public class SearchActivity extends AppCompatActivity implements MediaGridAdapte
     private static final int LOAD_MORE_PAGE_SIZE = 40;
     private int currentLoadedCount = 0;
     private boolean isLoadingMore = false;
+    private final Handler searchHandler = new Handler(Looper.getMainLooper());
+    private Runnable searchRunnable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,10 +96,24 @@ public class SearchActivity extends AppCompatActivity implements MediaGridAdapte
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                viewModel.performSearch(s.toString(), currentFilter);
+                if (searchRunnable != null) {
+                    searchHandler.removeCallbacks(searchRunnable);
+                }
+                currentLoadedCount = 0;
+                final String q = s.toString();
+                searchRunnable = () -> viewModel.performSearch(q, currentFilter);
+                searchHandler.postDelayed(searchRunnable, 200);
             }
             @Override public void afterTextChanged(Editable s) {}
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (searchRunnable != null) {
+            searchHandler.removeCallbacks(searchRunnable);
+        }
     }
 
     private void setupFilterChips() {
@@ -115,6 +133,7 @@ public class SearchActivity extends AppCompatActivity implements MediaGridAdapte
             } else if (id == R.id.chipFilterLarge) {
                 currentFilter = FilterOptions.TypeFilter.LARGE;
             }
+            currentLoadedCount = 0;
             viewModel.performSearch(binding.etSearch.getText().toString(), currentFilter);
         });
     }
@@ -125,9 +144,10 @@ public class SearchActivity extends AppCompatActivity implements MediaGridAdapte
             if (results != null) {
                 allSearchResults.addAll(results);
             }
-            int initialCount = Math.min(INITIAL_PAGE_SIZE, allSearchResults.size());
-            currentLoadedCount = initialCount;
-            adapter.submitList(new ArrayList<>(allSearchResults.subList(0, initialCount)));
+            int targetCount = Math.max(currentLoadedCount, INITIAL_PAGE_SIZE);
+            int displayCount = Math.min(targetCount, allSearchResults.size());
+            currentLoadedCount = displayCount;
+            adapter.submitList(new ArrayList<>(allSearchResults.subList(0, displayCount)));
             binding.emptyState.setVisibility(allSearchResults.isEmpty() ? View.VISIBLE : View.GONE);
         });
 

@@ -7,7 +7,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.animation.AlphaAnimation;
 import androidx.appcompat.app.AppCompatActivity;
+import com.amitbharat.gallery.data.models.FilterOptions;
+import com.amitbharat.gallery.data.repository.MediaRepository;
 import com.amitbharat.gallery.databinding.ActivitySplashBinding;
+import com.amitbharat.gallery.utils.PermissionHelper;
 
 @SuppressLint("CustomSplashScreen")
 public class SplashActivity extends AppCompatActivity {
@@ -20,9 +23,14 @@ public class SplashActivity extends AppCompatActivity {
         binding = ActivitySplashBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Fade animation
-        AlphaAnimation fadeIn = new AlphaAnimation(0.0f, 1.0f);
-        fadeIn.setDuration(800);
+        // Pre-warm media cache in background if permissions are already granted
+        if (PermissionHelper.hasStoragePermission(this)) {
+            MediaRepository.getInstance(this).loadMedia(FilterOptions.SortOrder.DATE_DESC);
+        }
+
+        // Fast subtle fade-in animation
+        AlphaAnimation fadeIn = new AlphaAnimation(0.2f, 1.0f);
+        fadeIn.setDuration(250);
         binding.getRoot().startAnimation(fadeIn);
 
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
@@ -33,6 +41,6 @@ public class SplashActivity extends AppCompatActivity {
             }
             startActivity(intent);
             finish();
-        }, 400);
+        }, 250);
     }
 }

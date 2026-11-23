@@ -55,11 +55,6 @@ public class FoldersFragment extends Fragment implements FolderGridAdapter.OnFol
 
         viewModel.getFoldersList().observe(getViewLifecycleOwner(), folders -> {
             allFolders = folders != null ? new ArrayList<>(folders) : new ArrayList<>();
-            allFolders.sort((f1, f2) -> {
-                String name1 = f1.getFolderName() != null ? f1.getFolderName() : "";
-                String name2 = f2.getFolderName() != null ? f2.getFolderName() : "";
-                return name1.compareToIgnoreCase(name2);
-            });
             adapter.submitList(new ArrayList<>(allFolders));
             binding.emptyState.setVisibility(allFolders.isEmpty() ? View.VISIBLE : View.GONE);
         });
@@ -72,14 +67,16 @@ public class FoldersFragment extends Fragment implements FolderGridAdapter.OnFol
     public void loadDataIfNeeded() {
         if (!hasLoaded && viewModel != null) {
             hasLoaded = true;
-            viewModel.loadFolders();
+            if (viewModel.getFoldersList().getValue() == null || viewModel.getFoldersList().getValue().isEmpty()) {
+                viewModel.loadFolders();
+            }
         }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (hasLoaded && viewModel != null) {
+        if (hasLoaded && viewModel != null && (viewModel.getFoldersList().getValue() == null || viewModel.getFoldersList().getValue().isEmpty())) {
             viewModel.loadFolders();
         }
     }

@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -16,6 +17,7 @@ import com.amitbharat.gallery.data.models.FolderItem;
 import com.amitbharat.gallery.utils.FileUtils;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class FolderGridAdapter extends RecyclerView.Adapter<FolderGridAdapter.FolderViewHolder> {
 
@@ -36,12 +38,43 @@ public class FolderGridAdapter extends RecyclerView.Adapter<FolderGridAdapter.Fo
         this.listener = listener;
     }
 
+    @Override
+    public void onViewRecycled(@NonNull FolderViewHolder holder) {
+        super.onViewRecycled(holder);
+        Glide.with(context).clear(holder.imgCover);
+    }
+
     public void submitList(List<FolderItem> newList) {
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+            @Override
+            public int getOldListSize() { return folderList.size(); }
+            @Override
+            public int getNewListSize() { return newList != null ? newList.size() : 0; }
+            @Override
+            public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+                FolderItem oldItem = folderList.get(oldItemPosition);
+                FolderItem newItem = newList.get(newItemPosition);
+                if (oldItem.getFolderPath() != null && newItem.getFolderPath() != null) {
+                    return oldItem.getFolderPath().equals(newItem.getFolderPath());
+                }
+                return oldItem.getBucketId() == newItem.getBucketId();
+            }
+            @Override
+            public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+                FolderItem oldItem = folderList.get(oldItemPosition);
+                FolderItem newItem = newList.get(newItemPosition);
+                return oldItem.getFileCount() == newItem.getFileCount() &&
+                        oldItem.getTotalSize() == newItem.getTotalSize() &&
+                        Objects.equals(oldItem.getCoverUri(), newItem.getCoverUri()) &&
+                        Objects.equals(oldItem.getCoverPath(), newItem.getCoverPath());
+            }
+        });
+
         folderList.clear();
         if (newList != null) {
             folderList.addAll(newList);
         }
-        notifyDataSetChanged();
+        diffResult.dispatchUpdatesTo(this);
     }
 
     @NonNull

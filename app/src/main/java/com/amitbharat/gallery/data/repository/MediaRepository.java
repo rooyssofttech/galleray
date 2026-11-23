@@ -19,15 +19,30 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MediaRepository {
     private final Context context;
     private final FavoriteDao favoriteDao;
     private final ExecutorService executor;
+    private final AtomicInteger loadRequestId = new AtomicInteger(0);
 
     private final MutableLiveData<List<MediaItem>> allMediaLive = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<List<FolderItem>> foldersLive = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<Boolean> isLoadingLive = new MutableLiveData<>(false);
+
+    private static volatile MediaRepository INSTANCE;
+
+    public static MediaRepository getInstance(Context context) {
+        if (INSTANCE == null) {
+            synchronized (MediaRepository.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new MediaRepository(context.getApplicationContext());
+                }
+            }
+        }
+        return INSTANCE;
+    }
 
     public MediaRepository(Context context) {
         this.context = context.getApplicationContext();
@@ -41,35 +56,43 @@ public class MediaRepository {
 
     public void loadMedia(final FilterOptions.SortOrder sortOrder) {
         isLoadingLive.postValue(true);
+        final int reqId = loadRequestId.incrementAndGet();
         executor.execute(() -> {
             try {
-                List<MediaItem> items = MediaUtils.queryAllMedia(context);
                 List<FavoriteEntity> favs = favoriteDao.getAllFavoritesSync();
                 Set<String> favPaths = new HashSet<>();
                 for (FavoriteEntity f : favs) {
                     favPaths.add(f.getMediaPath());
                 }
 
-                for (MediaItem item : items) {
-                    if (item.getPath() != null && favPaths.contains(item.getPath())) {
-                        item.setFavorite(true);
+                List<MediaItem> accumulated = new ArrayList<>();
+                MediaUtils.queryAllMediaProgressive(context, false, sortOrder, 60, (packet, isFirstPacket, isDone) -> {
+                    if (reqId != loadRequestId.get()) {
+                        return; // Discard superseded request
                     }
-                }
 
-                sortMediaList(items, sortOrder);
+                    for (MediaItem item : packet) {
+                        if (item.getPath() != null && favPaths.contains(item.getPath())) {
+                            item.setFavorite(true);
+                        }
+                    }
 
-                allMediaLive.postValue(items);
+                    accumulated.addAll(packet);
 
-                List<FolderItem> folders = MediaUtils.groupMediaByFolders(items);
-                Collections.sort(folders, (f1, f2) -> {
-                    String name1 = f1.getFolderName() != null ? f1.getFolderName() : "";
-                    String name2 = f2.getFolderName() != null ? f2.getFolderName() : "";
-                    return name1.compareToIgnoreCase(name2);
+                    // Post small packets progressively to LiveData so UI renders instantly
+                    allMediaLive.postValue(new ArrayList<>(accumulated));
+
+                    if (isFirstPacket || isDone || accumulated.size() % 240 == 0) {
+                        List<FolderItem> folders = MediaUtils.groupMediaByFolders(accumulated);
+                        foldersLive.postValue(folders);
+                    }
+
+                    if (isDone) {
+                        isLoadingLive.postValue(false);
+                    }
                 });
-                foldersLive.postValue(folders);
             } catch (Exception e) {
                 e.printStackTrace();
-            } finally {
                 isLoadingLive.postValue(false);
             }
         });

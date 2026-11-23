@@ -40,8 +40,10 @@ public class DeviceExplorerViewModel extends AndroidViewModel {
     public LiveData<Boolean> getIsSelectionMode() { return isSelectionMode; }
 
     public void loadStorageVolumes() {
-        List<StorageInfo> volumes = StorageUtils.getStorageVolumes(getApplication());
-        storageVolumesLive.setValue(volumes);
+        java.util.concurrent.Executors.newSingleThreadExecutor().execute(() -> {
+            List<StorageInfo> volumes = StorageUtils.getStorageVolumes(getApplication());
+            storageVolumesLive.postValue(volumes);
+        });
     }
 
     public void navigateTo(String path) {

@@ -468,5 +468,6 @@ public class AudioPlayerActivity extends AppCompatActivity {
             player.release();
             player = null;
         }
+        com.amitbharat.gallery.utils.MediaHolder.clear();
     }
 }

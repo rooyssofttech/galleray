@@ -1,12 +1,14 @@
 package com.amitbharat.gallery.ui.adapters;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
@@ -21,6 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MediaGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+    public static final String PAYLOAD_SELECTION = "payload_selection";
+    public static final String PAYLOAD_FAVORITE = "payload_favorite";
 
     public interface OnMediaClickListener {
         void onMediaClick(MediaItem item, int position);
@@ -37,7 +42,26 @@ public class MediaGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
     public MediaGridAdapter(Context context) {
         this.context = context;
+        setHasStableIds(true);
         setStateRestorationPolicy(StateRestorationPolicy.PREVENT_WHEN_EMPTY);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        if (position >= 0 && position < mediaList.size()) {
+            return mediaList.get(position).getId();
+        }
+        return RecyclerView.NO_ID;
+    }
+
+    @Override
+    public void onViewRecycled(@NonNull RecyclerView.ViewHolder holder) {
+        super.onViewRecycled(holder);
+        if (holder instanceof GridViewHolder) {
+            Glide.with(context).clear(((GridViewHolder) holder).imgThumbnail);
+        } else if (holder instanceof ListViewHolder) {
+            Glide.with(context).clear(((ListViewHolder) holder).imgThumbnail);
+        }
     }
 
     public void setListener(OnMediaClickListener listener) {
@@ -73,6 +97,20 @@ public class MediaGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                         oldItem.isFavorite() == newItem.isFavorite() &&
                         oldItem.getSize() == newItem.getSize();
             }
+            @Nullable
+            @Override
+            public Object getChangePayload(int oldItemPosition, int newItemPosition) {
+                MediaItem oldItem = mediaList.get(oldItemPosition);
+                MediaItem newItem = newList.get(newItemPosition);
+                Bundle diffBundle = new Bundle();
+                if (oldItem.isSelected() != newItem.isSelected()) {
+                    diffBundle.putBoolean(PAYLOAD_SELECTION, newItem.isSelected());
+                }
+                if (oldItem.isFavorite() != newItem.isFavorite()) {
+                    diffBundle.putBoolean(PAYLOAD_FAVORITE, newItem.isFavorite());
+                }
+                return diffBundle.isEmpty() ? null : diffBundle;
+            }
         });
 
         mediaList.clear();
@@ -94,10 +132,15 @@ public class MediaGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     }
 
     public void clearAllSelections() {
-        for (MediaItem item : mediaList) {
-            item.setSelected(false);
+        for (int i = 0; i < mediaList.size(); i++) {
+            MediaItem item = mediaList.get(i);
+            if (item.isSelected()) {
+                item.setSelected(false);
+                Bundle b = new Bundle();
+                b.putBoolean(PAYLOAD_SELECTION, false);
+                notifyItemChanged(i, b);
+            }
         }
-        notifyDataSetChanged();
     }
 
     @Override
@@ -116,6 +159,35 @@ public class MediaGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             View view = inflater.inflate(R.layout.item_media_list, parent, false);
             return new ListViewHolder(view);
         }
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position, @NonNull List<Object> payloads) {
+        if (!payloads.isEmpty()) {
+            for (Object payload : payloads) {
+                if (payload instanceof Bundle) {
+                    Bundle b = (Bundle) payload;
+                    if (b.containsKey(PAYLOAD_SELECTION)) {
+                        boolean sel = b.getBoolean(PAYLOAD_SELECTION);
+                        if (holder instanceof GridViewHolder) {
+                            ((GridViewHolder) holder).imgCheck.setVisibility(sel ? View.VISIBLE : View.GONE);
+                        } else if (holder instanceof ListViewHolder) {
+                            ((ListViewHolder) holder).imgCheck.setVisibility(sel ? View.VISIBLE : View.GONE);
+                        }
+                    }
+                    if (b.containsKey(PAYLOAD_FAVORITE)) {
+                        boolean fav = b.getBoolean(PAYLOAD_FAVORITE);
+                        if (holder instanceof GridViewHolder) {
+                            ((GridViewHolder) holder).imgFavorite.setVisibility(fav ? View.VISIBLE : View.GONE);
+                        } else if (holder instanceof ListViewHolder) {
+                            ((ListViewHolder) holder).imgFavorite.setVisibility(fav ? View.VISIBLE : View.GONE);
+                        }
+                    }
+                }
+            }
+            return;
+        }
+        super.onBindViewHolder(holder, position, payloads);
     }
 
     @Override
@@ -180,7 +252,7 @@ public class MediaGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                         .override(280, 280)
                         .diskCacheStrategy(DiskCacheStrategy.ALL)
                         .centerCrop()
-                        .transition(DrawableTransitionOptions.withCrossFade())
+                        .transition(DrawableTransitionOptions.withCrossFade(100))
                         .into(imgThumbnail);
 
                 if (item.isVideo() && item.getDuration() > 0) {

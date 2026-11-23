@@ -57,7 +57,10 @@ public class AllMediaFragment extends Fragment implements MediaGridAdapter.OnMed
 
         setupScrollPagination();
 
-        binding.swipeRefresh.setOnRefreshListener(() -> viewModel.loadMedia());
+        binding.swipeRefresh.setOnRefreshListener(() -> {
+            currentLoadedCount = 0;
+            viewModel.loadMedia();
+        });
 
         viewModel.getMediaList().observe(getViewLifecycleOwner(), items -> {
             allMediaItems.clear();
@@ -68,9 +71,10 @@ public class AllMediaFragment extends Fragment implements MediaGridAdapter.OnMed
                     }
                 }
             }
-            int initialCount = Math.min(INITIAL_PAGE_SIZE, allMediaItems.size());
-            currentLoadedCount = initialCount;
-            adapter.submitList(new ArrayList<>(allMediaItems.subList(0, initialCount)));
+            int targetCount = Math.max(currentLoadedCount, INITIAL_PAGE_SIZE);
+            int displayCount = Math.min(targetCount, allMediaItems.size());
+            currentLoadedCount = displayCount;
+            adapter.submitList(new ArrayList<>(allMediaItems.subList(0, displayCount)));
             binding.emptyState.setVisibility(allMediaItems.isEmpty() ? View.VISIBLE : View.GONE);
         });
 
@@ -177,7 +181,9 @@ public class AllMediaFragment extends Fragment implements MediaGridAdapter.OnMed
     public void onMediaClick(MediaItem item, int position) {
         if (Boolean.TRUE.equals(viewModel.getIsSelectionMode().getValue())) {
             viewModel.toggleSelection(item);
-            adapter.notifyItemChanged(position);
+            android.os.Bundle b = new android.os.Bundle();
+            b.putBoolean(MediaGridAdapter.PAYLOAD_SELECTION, item.isSelected());
+            adapter.notifyItemChanged(position, b);
         } else {
             if (item.isVideo()) {
                 Intent intent = new Intent(requireContext(), VideoPlayerActivity.class);
@@ -204,14 +210,16 @@ public class AllMediaFragment extends Fragment implements MediaGridAdapter.OnMed
     @Override
     public void onMediaLongClick(MediaItem item, int position) {
         viewModel.toggleSelection(item);
-        adapter.notifyItemChanged(position);
+        android.os.Bundle b = new android.os.Bundle();
+        b.putBoolean(MediaGridAdapter.PAYLOAD_SELECTION, item.isSelected());
+        adapter.notifyItemChanged(position, b);
     }
 
     @Override
     public void onResume() {
         super.onResume();
         updateViewMode();
-        if (viewModel != null) {
+        if (viewModel != null && (viewModel.getMediaList().getValue() == null || viewModel.getMediaList().getValue().isEmpty())) {
             viewModel.loadMedia();
         }
     }

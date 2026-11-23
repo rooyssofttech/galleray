@@ -8,6 +8,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -19,6 +20,7 @@ import com.amitbharat.gallery.utils.FileUtils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.FileViewHolder> {
 
@@ -41,12 +43,44 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.FileVi
         this.listener = listener;
     }
 
+    @Override
+    public void onViewRecycled(@NonNull FileViewHolder holder) {
+        super.onViewRecycled(holder);
+        Glide.with(context).clear(holder.imgFileIcon);
+    }
+
     public void submitList(List<FileItem> newList) {
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+            @Override
+            public int getOldListSize() { return fileList.size(); }
+            @Override
+            public int getNewListSize() { return newList != null ? newList.size() : 0; }
+            @Override
+            public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+                return Objects.equals(fileList.get(oldItemPosition).getPath(), newList.get(newItemPosition).getPath());
+            }
+            @Override
+            public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+                FileItem oldItem = fileList.get(oldItemPosition);
+                FileItem newItem = newList.get(newItemPosition);
+                return oldItem.isSelected() == newItem.isSelected() &&
+                        oldItem.getSize() == newItem.getSize() &&
+                        oldItem.getLastModified() == newItem.getLastModified();
+            }
+        });
+
         fileList.clear();
         if (newList != null) {
             fileList.addAll(newList);
         }
-        notifyDataSetChanged();
+        diffResult.dispatchUpdatesTo(this);
+    }
+
+    public void appendItems(List<FileItem> moreItems) {
+        if (moreItems == null || moreItems.isEmpty()) return;
+        int startPos = fileList.size();
+        fileList.addAll(moreItems);
+        notifyItemRangeInserted(startPos, moreItems.size());
     }
 
     public List<FileItem> getFileList() {
@@ -111,7 +145,11 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.FileVi
 
             if (item.isDirectory()) {
                 imgFileIcon.setImageResource(R.drawable.ic_folder);
-                tvFileDetails.setText(item.getChildCount() + " items • " + DateUtils.formatDate(item.getLastModified()));
+                if (item.getChildCount() >= 0) {
+                    tvFileDetails.setText(item.getChildCount() + " items • " + DateUtils.formatDate(item.getLastModified()));
+                } else {
+                    tvFileDetails.setText("Folder • " + DateUtils.formatDate(item.getLastModified()));
+                }
             } else {
                 String ext = item.getExtension().toLowerCase();
                 if (ext.equals("jpg") || ext.equals("png") || ext.equals("jpeg") || ext.equals("webp") || ext.equals("mp4")) {

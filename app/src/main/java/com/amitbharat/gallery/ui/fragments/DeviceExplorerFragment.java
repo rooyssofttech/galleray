@@ -46,6 +46,11 @@ public class DeviceExplorerFragment extends Fragment implements
     private StorageVolumeAdapter volumeAdapter;
     private BreadcrumbAdapter breadcrumbAdapter;
     private boolean hasLoaded = false;
+    private static final int INITIAL_PAGE_SIZE = 80;
+    private static final int LOAD_MORE_PAGE_SIZE = 60;
+    private int currentLoadedCount = 0;
+    private boolean isLoadingMore = false;
+    private final List<FileItem> allCurrentFiles = new ArrayList<>();
 
     @Nullable
     @Override
@@ -75,13 +80,41 @@ public class DeviceExplorerFragment extends Fragment implements
         binding.recyclerViewFiles.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.recyclerViewFiles.setAdapter(fileAdapter);
 
+        binding.recyclerViewFiles.addOnScrollListener(new androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull androidx.recyclerview.widget.RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (dy <= 0) return;
+
+                androidx.recyclerview.widget.RecyclerView.LayoutManager lm = recyclerView.getLayoutManager();
+                if (lm instanceof LinearLayoutManager) {
+                    int totalCount = lm.getItemCount();
+                    int lastVisible = ((LinearLayoutManager) lm).findLastVisibleItemPosition();
+                    if (!isLoadingMore && currentLoadedCount < allCurrentFiles.size() && totalCount <= lastVisible + 20) {
+                        loadNextChunk();
+                    }
+                }
+            }
+        });
+
         binding.swipeRefresh.setOnRefreshListener(() -> {
+            currentLoadedCount = 0;
             hasLoaded = true;
             viewModel.refresh();
         });
 
         setupClickListeners();
         observeViewModel();
+    }
+
+    private void loadNextChunk() {
+        if (isLoadingMore || currentLoadedCount >= allCurrentFiles.size()) return;
+        isLoadingMore = true;
+        int nextCount = Math.min(currentLoadedCount + LOAD_MORE_PAGE_SIZE, allCurrentFiles.size());
+        List<FileItem> more = new ArrayList<>(allCurrentFiles.subList(currentLoadedCount, nextCount));
+        fileAdapter.appendItems(more);
+        currentLoadedCount = nextCount;
+        isLoadingMore = false;
     }
 
     public void loadDataIfNeeded() {
@@ -136,12 +169,23 @@ public class DeviceExplorerFragment extends Fragment implements
     }
 
     private void observeViewModel() {
+        viewModel.getCurrentPathLive().observe(getViewLifecycleOwner(), path -> {
+            currentLoadedCount = 0;
+        });
+
         viewModel.getStorageVolumesLive().observe(getViewLifecycleOwner(), volumes -> {
             volumeAdapter.submitList(volumes);
         });
 
         viewModel.getCurrentFilesLive().observe(getViewLifecycleOwner(), files -> {
-            fileAdapter.submitList(files);
+            allCurrentFiles.clear();
+            if (files != null) {
+                allCurrentFiles.addAll(files);
+            }
+            int targetCount = Math.max(currentLoadedCount, INITIAL_PAGE_SIZE);
+            int displayCount = Math.min(targetCount, allCurrentFiles.size());
+            currentLoadedCount = displayCount;
+            fileAdapter.submitList(new ArrayList<>(allCurrentFiles.subList(0, displayCount)));
         });
 
         viewModel.getBreadcrumbsLive().observe(getViewLifecycleOwner(), crumbs -> {

@@ -41,6 +41,7 @@ public class ImageViewerActivity extends AppCompatActivity implements ViewPagerM
     private final Handler slideshowHandler = new Handler(Looper.getMainLooper());
     private Runnable slideshowRunnable;
     private FavoriteDao favoriteDao;
+    private final java.util.concurrent.ExecutorService bgExecutor = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,7 +104,7 @@ public class ImageViewerActivity extends AppCompatActivity implements ViewPagerM
         binding.tvTitle.setText(item.getDisplayName());
         binding.tvSubTitle.setText((position + 1) + " of " + mediaList.size() + " • " + DateUtils.formatDate(item.getDateAdded()));
 
-        Executors.newSingleThreadExecutor().execute(() -> {
+        bgExecutor.execute(() -> {
             boolean isFav = item.getPath() != null && favoriteDao.isFavorite(item.getPath());
             runOnUiThread(() -> {
                 binding.btnFavorite.setImageResource(isFav ? R.drawable.ic_favorite_filled : R.drawable.ic_favorite);
@@ -344,5 +345,7 @@ public class ImageViewerActivity extends AppCompatActivity implements ViewPagerM
         if (slideshowRunnable != null) {
             slideshowHandler.removeCallbacks(slideshowRunnable);
         }
+        bgExecutor.shutdown();
+        com.amitbharat.gallery.utils.MediaHolder.clear();
     }
 }

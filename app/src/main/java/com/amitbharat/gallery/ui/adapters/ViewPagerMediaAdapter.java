@@ -27,6 +27,21 @@ public class ViewPagerMediaAdapter extends RecyclerView.Adapter<ViewPagerMediaAd
 
     public ViewPagerMediaAdapter(Context context) {
         this.context = context;
+        setHasStableIds(true);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        if (position >= 0 && position < items.size()) {
+            return items.get(position).getId();
+        }
+        return RecyclerView.NO_ID;
+    }
+
+    @Override
+    public void onViewRecycled(@NonNull MediaViewHolder holder) {
+        super.onViewRecycled(holder);
+        Glide.with(context).clear(holder.zoomableImageView);
     }
 
     public void setListener(OnMediaViewerListener listener) {
@@ -89,8 +104,10 @@ public class ViewPagerMediaAdapter extends RecyclerView.Adapter<ViewPagerMediaAd
         }
 
         void bind(MediaItem item) {
+            Object model = item.getUri() != null ? item.getUri() : item.getPath();
             Glide.with(context)
-                    .load(item.getUri() != null ? item.getUri() : item.getPath())
+                    .load(model)
+                    .thumbnail(Glide.with(context).load(model).override(280, 280))
                     .into(zoomableImageView);
 
             btnPlayVideoOverlay.setVisibility(item.isVideo() ? View.VISIBLE : View.GONE);

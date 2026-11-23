@@ -8,6 +8,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -17,6 +18,7 @@ import com.amitbharat.gallery.utils.FileUtils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class VaultAdapter extends RecyclerView.Adapter<VaultAdapter.VaultViewHolder> {
 
@@ -30,6 +32,7 @@ public class VaultAdapter extends RecyclerView.Adapter<VaultAdapter.VaultViewHol
 
     public VaultAdapter(Context context) {
         this.context = context;
+        setHasStableIds(true);
         setStateRestorationPolicy(StateRestorationPolicy.PREVENT_WHEN_EMPTY);
     }
 
@@ -37,12 +40,44 @@ public class VaultAdapter extends RecyclerView.Adapter<VaultAdapter.VaultViewHol
         this.listener = listener;
     }
 
-    public void submitList(List<VaultItem> list) {
-        items.clear();
-        if (list != null) {
-            items.addAll(list);
+    @Override
+    public long getItemId(int position) {
+        if (position >= 0 && position < items.size()) {
+            return items.get(position).getId();
         }
-        notifyDataSetChanged();
+        return RecyclerView.NO_ID;
+    }
+
+    @Override
+    public void onViewRecycled(@NonNull VaultViewHolder holder) {
+        super.onViewRecycled(holder);
+        Glide.with(context).clear(holder.imgVaultThumbnail);
+    }
+
+    public void submitList(List<VaultItem> newList) {
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+            @Override
+            public int getOldListSize() { return items.size(); }
+            @Override
+            public int getNewListSize() { return newList != null ? newList.size() : 0; }
+            @Override
+            public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+                return items.get(oldItemPosition).getId() == newList.get(newItemPosition).getId();
+            }
+            @Override
+            public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+                VaultItem oldItem = items.get(oldItemPosition);
+                VaultItem newItem = newList.get(newItemPosition);
+                return oldItem.getSize() == newItem.getSize() &&
+                        Objects.equals(oldItem.getVaultPath(), newItem.getVaultPath());
+            }
+        });
+
+        items.clear();
+        if (newList != null) {
+            items.addAll(newList);
+        }
+        diffResult.dispatchUpdatesTo(this);
     }
 
     @NonNull

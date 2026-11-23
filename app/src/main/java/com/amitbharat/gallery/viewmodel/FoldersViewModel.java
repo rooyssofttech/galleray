@@ -15,7 +15,7 @@ public class FoldersViewModel extends AndroidViewModel {
 
     public FoldersViewModel(@NonNull Application application) {
         super(application);
-        this.mediaRepository = new MediaRepository(application);
+        this.mediaRepository = MediaRepository.getInstance(application);
     }
 
     public LiveData<List<FolderItem>> getFoldersList() {

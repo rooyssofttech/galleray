@@ -218,6 +218,7 @@ public class MainActivity extends AppCompatActivity {
         foldersFragment = new FoldersFragment();
         deviceExplorerFragment = new DeviceExplorerFragment();
 
+        binding.viewPager.setOffscreenPageLimit(2);
         binding.viewPager.setAdapter(new FragmentStateAdapter(this) {
             @NonNull
             @Override
@@ -509,10 +510,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        if (PermissionHelper.hasStoragePermission(this)) {
+            if (mediaViewModel != null && (mediaViewModel.getMediaList().getValue() == null || mediaViewModel.getMediaList().getValue().isEmpty())) {
+                mediaViewModel.loadMedia();
+            }
+        }
+    }
+
+    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (mediaViewModel != null) {
-            mediaViewModel.loadMedia();
+        if (PermissionHelper.hasStoragePermission(this)) {
+            if (mediaViewModel != null) {
+                mediaViewModel.loadMedia();
+            }
+            if (deviceExplorerViewModel != null) {
+                deviceExplorerViewModel.loadStorageVolumes();
+                File root = android.os.Environment.getExternalStorageDirectory();
+                if (root != null) {
+                    deviceExplorerViewModel.openPath(root.getAbsolutePath());
+                }
+            }
         }
     }
 }

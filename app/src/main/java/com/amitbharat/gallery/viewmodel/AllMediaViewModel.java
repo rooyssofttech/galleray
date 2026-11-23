@@ -19,7 +19,7 @@ public class AllMediaViewModel extends AndroidViewModel {
 
     public AllMediaViewModel(@NonNull Application application) {
         super(application);
-        this.mediaRepository = new MediaRepository(application);
+        this.mediaRepository = MediaRepository.getInstance(application);
     }
 
     public LiveData<List<MediaItem>> getMediaList() {

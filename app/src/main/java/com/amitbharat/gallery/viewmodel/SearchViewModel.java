@@ -13,11 +13,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class SearchViewModel extends AndroidViewModel {
     private final ExecutorService executor;
     private final MutableLiveData<List<MediaItem>> searchResultsLive = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<Boolean> isSearchingLive = new MutableLiveData<>(false);
+    private final AtomicInteger searchReqId = new AtomicInteger(0);
     private List<MediaItem> allCachedMedia = new ArrayList<>();
 
     public SearchViewModel(@NonNull Application application) {
@@ -37,12 +39,16 @@ public class SearchViewModel extends AndroidViewModel {
     }
 
     public void performSearch(String query, FilterOptions.TypeFilter filter) {
+        final int reqId = searchReqId.incrementAndGet();
         isSearchingLive.postValue(true);
         executor.execute(() -> {
+            if (reqId != searchReqId.get()) return;
             List<MediaItem> filtered = new ArrayList<>();
             String lowerQuery = query != null ? query.toLowerCase(Locale.ROOT).trim() : "";
 
             for (MediaItem item : allCachedMedia) {
+                if (reqId != searchReqId.get()) return;
+
                 boolean matchesQuery = lowerQuery.isEmpty() ||
                         (item.getDisplayName() != null && item.getDisplayName().toLowerCase(Locale.ROOT).contains(lowerQuery)) ||
                         (item.getBucketDisplayName() != null && item.getBucketDisplayName().toLowerCase(Locale.ROOT).contains(lowerQuery));
@@ -64,11 +70,16 @@ public class SearchViewModel extends AndroidViewModel {
 
                 if (matchesType) {
                     filtered.add(item);
+                    if (filtered.size() == 60) {
+                        searchResultsLive.postValue(new ArrayList<>(filtered));
+                    }
                 }
             }
 
-            searchResultsLive.postValue(filtered);
-            isSearchingLive.postValue(false);
+            if (reqId == searchReqId.get()) {
+                searchResultsLive.postValue(filtered);
+                isSearchingLive.postValue(false);
+            }
         });
     }
 }
