@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Standardized Typography Dimens -->
+    <dimen name="text_display">24sp</dimen>
+    <dimen name="text_headline">20sp</dimen>
+    <dimen name="text_title_large">18sp</dimen>
+    <dimen name="text_title_medium">16sp</dimen>
+    <dimen name="text_title_small">14sp</dimen>
+    <dimen name="text_body_large">16sp</dimen>
+    <dimen name="text_body_medium">14sp</dimen>
+    <dimen name="text_body_small">12sp</dimen>
+    <dimen name="text_label_large">14sp</dimen>
+    <dimen name="text_label_medium">12sp</dimen>
+    <dimen name="text_label_small">11sp</dimen>
+
+    <!-- Standard Spacing & Paddings -->
+    <dimen name="spacing_tiny">4dp</dimen>
+    <dimen name="spacing_small">8dp</dimen>
+    <dimen name="spacing_medium">16dp</dimen>
+    <dimen name="spacing_large">24dp</dimen>
+    <dimen name="spacing_xlarge">32dp</dimen>
+
+    <!-- Standard Corner Radii -->
+    <dimen name="corner_radius_small">8dp</dimen>
+    <dimen name="corner_radius_medium">12dp</dimen>
+    <dimen name="corner_radius_large">16dp</dimen>
+    <dimen name="corner_radius_pill">24dp</dimen>
+
+    <!-- Touch Targets & Button Heights -->
+    <dimen name="min_touch_target">48dp</dimen>
+    <dimen name="button_height_standard">48dp</dimen>
+    <dimen name="button_height_compact">38dp</dimen>
+    <dimen name="chip_touch_target">36dp</dimen>
+
+    <!-- Grid Item Dimensions -->
+    <dimen name="grid_spacing">2dp</dimen>
+    <dimen name="badge_padding_horizontal">6dp</dimen>
+    <dimen name="badge_padding_vertical">2dp</dimen>
+</resources>

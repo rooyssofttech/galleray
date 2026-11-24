@@ -63,7 +63,7 @@
                         android:layout_marginTop="12dp"
                         android:text="Scanning Junk..."
                         android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium"
-                        android:textColor="#E53935"
+                        android:textColor="@color/md_theme_light_error"
                         android:textStyle="bold" />
 
                     <TextView
@@ -74,7 +74,7 @@
                         android:text="Detecting waste and garbage files..."
                         android:textAlignment="center"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="13sp" />
+                        android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnCleanAllJunk"
@@ -143,7 +143,7 @@
                             android:layout_height="wrap_content"
                             android:text="Scanning for APK files..."
                             android:textColor="?attr/colorOnSurfaceVariant"
-                            android:textSize="12sp" />
+                            android:textAppearance="@style/TextAppearance.Material3.BodySmall" />
                     </LinearLayout>
 
                     <com.google.android.material.button.MaterialButton
@@ -152,7 +152,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Clean"
-                        android:textColor="#E53935" />
+                        android:textColor="@color/md_theme_light_error" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -198,7 +198,7 @@
                             android:layout_height="wrap_content"
                             android:text="Scanning cache &amp; thumbnails..."
                             android:textColor="?attr/colorOnSurfaceVariant"
-                            android:textSize="12sp" />
+                            android:textAppearance="@style/TextAppearance.Material3.BodySmall" />
                     </LinearLayout>
 
                     <com.google.android.material.button.MaterialButton
@@ -207,7 +207,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Clean"
-                        android:textColor="#E53935" />
+                        android:textColor="@color/md_theme_light_error" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -253,7 +253,7 @@
                             android:layout_height="wrap_content"
                             android:text="Clean empty directories"
                             android:textColor="?attr/colorOnSurfaceVariant"
-                            android:textSize="12sp" />
+                            android:textAppearance="@style/TextAppearance.Material3.BodySmall" />
                     </LinearLayout>
 
                     <com.google.android.material.button.MaterialButton
@@ -262,7 +262,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Clean"
-                        android:textColor="#E53935" />
+                        android:textColor="@color/md_theme_light_error" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -308,7 +308,7 @@
                             android:layout_height="wrap_content"
                             android:text="Find duplicate photos &amp; files"
                             android:textColor="?attr/colorOnSurfaceVariant"
-                            android:textSize="12sp" />
+                            android:textAppearance="@style/TextAppearance.Material3.BodySmall" />
                     </LinearLayout>
 
                     <com.google.android.material.button.MaterialButton
@@ -317,7 +317,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Clean"
-                        android:textColor="#E53935" />
+                        android:textColor="@color/md_theme_light_error" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -363,7 +363,7 @@
                             android:layout_height="wrap_content"
                             android:text="Scan large videos and files"
                             android:textColor="?attr/colorOnSurfaceVariant"
-                            android:textSize="12sp" />
+                            android:textAppearance="@style/TextAppearance.Material3.BodySmall" />
                     </LinearLayout>
 
                     <com.google.android.material.button.MaterialButton

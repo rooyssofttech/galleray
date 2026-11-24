@@ -15,6 +15,8 @@
         <item name="colorOnSurface">@color/md_theme_dark_onSurface</item>
         <item name="colorSurfaceVariant">@color/md_theme_dark_surfaceVariant</item>
         <item name="colorOnSurfaceVariant">@color/md_theme_dark_onSurfaceVariant</item>
+        <item name="colorOutline">@color/md_theme_dark_outline</item>
+        <item name="colorOutlineVariant">@color/md_theme_dark_outlineVariant</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">false</item>
@@ -23,5 +25,60 @@
         <item name="android:scrollbarTrackVertical">@drawable/scrollbar_track</item>
         <item name="android:scrollbarSize">5dp</item>
         <item name="android:fadeScrollbars">false</item>
+
+        <!-- Global Typography Mapping -->
+        <item name="textAppearanceHeadlineLarge">@style/TextAppearance.Gallery.HeadlineLarge</item>
+        <item name="textAppearanceHeadlineMedium">@style/TextAppearance.Gallery.HeadlineMedium</item>
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.Gallery.HeadlineSmall</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.Gallery.TitleLarge</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.Gallery.TitleMedium</item>
+        <item name="textAppearanceTitleSmall">@style/TextAppearance.Gallery.TitleSmall</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.Gallery.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.Gallery.BodyMedium</item>
+        <item name="textAppearanceBodySmall">@style/TextAppearance.Gallery.BodySmall</item>
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.Gallery.LabelLarge</item>
+        <item name="textAppearanceLabelMedium">@style/TextAppearance.Gallery.LabelMedium</item>
+        <item name="textAppearanceLabelSmall">@style/TextAppearance.Gallery.LabelSmall</item>
+    </style>
+
+    <!-- Immersive Media Viewer & Editor Theme (Dark) -->
+    <style name="Theme.Gallery.MediaViewer" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/md_theme_dark_primary</item>
+        <item name="colorOnPrimary">#00189B</item>
+        <item name="colorPrimaryContainer">#253A99</item>
+        <item name="colorOnPrimaryContainer">#DFE0FF</item>
+        <item name="colorSecondary">@color/md_theme_dark_secondary</item>
+        <item name="colorOnSecondary">#2E2F42</item>
+        <item name="android:colorBackground">#0E0F14</item>
+        <item name="colorOnBackground">#E4E1E6</item>
+        <item name="colorSurface">#16171E</item>
+        <item name="colorOnSurface">#FFFFFF</item>
+        <item name="colorSurfaceVariant">#242634</item>
+        <item name="colorOnSurfaceVariant">#C7C5D0</item>
+        <item name="colorOutline">#777680</item>
+        <item name="colorOutlineVariant">#46464F</item>
+        <item name="android:windowBackground">#0E0F14</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:scrollbarThumbVertical">@drawable/scrollbar_thumb</item>
+        <item name="android:scrollbarTrackVertical">@drawable/scrollbar_track</item>
+        <item name="android:scrollbarSize">5dp</item>
+        <item name="android:fadeScrollbars">false</item>
+
+        <!-- Typography Mapping for Media Viewer -->
+        <item name="textAppearanceHeadlineLarge">@style/TextAppearance.Gallery.HeadlineLarge</item>
+        <item name="textAppearanceHeadlineMedium">@style/TextAppearance.Gallery.HeadlineMedium</item>
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.Gallery.HeadlineSmall</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.Gallery.TitleLarge</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.Gallery.TitleMedium</item>
+        <item name="textAppearanceTitleSmall">@style/TextAppearance.Gallery.TitleSmall</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.Gallery.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.Gallery.BodyMedium</item>
+        <item name="textAppearanceBodySmall">@style/TextAppearance.Gallery.BodySmall</item>
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.Gallery.LabelLarge</item>
+        <item name="textAppearanceLabelMedium">@style/TextAppearance.Gallery.LabelMedium</item>
+        <item name="textAppearanceLabelSmall">@style/TextAppearance.Gallery.LabelSmall</item>
     </style>
 </resources>

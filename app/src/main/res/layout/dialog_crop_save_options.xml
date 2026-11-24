@@ -88,7 +88,7 @@
             android:layout_height="wrap_content"
             android:checked="true"
             android:text="Lock Aspect Ratio (Proportional Scale)"
-            android:textSize="13sp" />
+            android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
 
         <!-- Dimension Quick Presets -->
         <HorizontalScrollView
@@ -157,7 +157,7 @@
                 android:layout_height="wrap_content"
                 android:text="Quality: "
                 android:textColor="?attr/colorOnSurfaceVariant"
-                android:textSize="13sp" />
+                android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
 
             <TextView
                 android:id="@+id/tvQualityValue"
@@ -165,7 +165,7 @@
                 android:layout_height="wrap_content"
                 android:text="90%"
                 android:textColor="?attr/colorPrimary"
-                android:textSize="13sp"
+                android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
                 android:textStyle="bold" />
 
             <TextView
@@ -176,7 +176,7 @@
                 android:gravity="end"
                 android:text="Est: ~850 KB"
                 android:textColor="?attr/colorOnSurfaceVariant"
-                android:textSize="13sp" />
+                android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
         </LinearLayout>
 
         <SeekBar

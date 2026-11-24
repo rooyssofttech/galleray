@@ -47,7 +47,7 @@
                 android:maxLines="1"
                 android:text="Photo"
                 android:textColor="#FFFFFF"
-                android:textSize="16sp"
+                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
                 android:textStyle="bold" />
 
             <TextView
@@ -55,7 +55,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="#B3FFFFFF"
-                android:textSize="12sp" />
+                android:textAppearance="@style/TextAppearance.Material3.BodySmall" />
         </LinearLayout>
 
         <ImageButton

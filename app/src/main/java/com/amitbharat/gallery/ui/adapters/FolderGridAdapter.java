@@ -115,7 +115,11 @@ public class FolderGridAdapter extends RecyclerView.Adapter<FolderGridAdapter.Fo
         }
 
         void bind(FolderItem folder) {
-            tvFolderName.setText(folder.getFolderName());
+            String name = folder.getFolderName();
+            if ("0".equals(name) || (folder.getFolderPath() != null && folder.getFolderPath().endsWith("/0"))) {
+                name = context.getString(R.string.storage_internal);
+            }
+            tvFolderName.setText(name);
             tvCountBadge.setText(String.valueOf(folder.getFileCount()));
             tvFolderDetails.setText(folder.getFileCount() == 1 ? "1 item" : folder.getFileCount() + " items");
 

@@ -169,7 +169,11 @@ public class DeviceExplorerViewModel extends AndroidViewModel {
             file = file.getParentFile();
         }
         for (File f : fileList) {
-            crumbs.add(f.getName().isEmpty() ? "Storage" : f.getName());
+            String name = f.getName();
+            if (name.isEmpty() || "0".equals(name) || (root != null && f.getAbsolutePath().equals(root.getAbsolutePath()))) {
+                name = "Storage";
+            }
+            crumbs.add(name);
             breadcrumbPaths.add(f.getAbsolutePath());
         }
         breadcrumbsLive.setValue(crumbs);

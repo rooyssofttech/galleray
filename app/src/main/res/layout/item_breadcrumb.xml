@@ -14,7 +14,7 @@
         android:paddingVertical="4dp"
         android:text="Internal"
         android:textColor="?attr/colorPrimary"
-        android:textSize="13sp"
+        android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
         android:textStyle="bold" />
 
     <TextView

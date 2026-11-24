@@ -484,6 +484,9 @@ public class MediaUtils {
             if (folderPath.isEmpty()) {
                 folderPath = String.valueOf(item.getBucketId());
             }
+            if ("0".equals(folderName) || (folderPath != null && folderPath.endsWith("/0"))) {
+                folderName = "Internal Storage";
+            }
 
             long itemDate = Math.max(item.getDateModified(), item.getDateAdded());
             FolderItem folder = folderMap.get(folderPath);

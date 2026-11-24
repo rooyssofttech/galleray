@@ -93,7 +93,7 @@
             android:maxLines="1"
             android:text="Video"
             android:textColor="#FFFFFF"
-            android:textSize="16sp"
+            android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
             android:textStyle="bold" />
 
         <ImageButton

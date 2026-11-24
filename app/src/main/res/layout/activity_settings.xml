@@ -64,7 +64,7 @@
                     android:layout_marginTop="2dp"
                     android:text="@string/pref_theme_system"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="14sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodySmall" />
             </LinearLayout>
 
             <com.google.android.material.divider.MaterialDivider
@@ -102,7 +102,7 @@
                     android:layout_marginTop="2dp"
                     android:text="3 Columns"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="14sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodySmall" />
             </LinearLayout>
 
             <!-- Show Hidden Files -->
@@ -131,7 +131,7 @@
                         android:layout_marginTop="2dp"
                         android:text="Display files and folders starting with dot"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="14sp" />
+                        android:textAppearance="@style/TextAppearance.Material3.BodySmall" />
                 </LinearLayout>
 
                 <com.google.android.material.materialswitch.MaterialSwitch
@@ -174,7 +174,7 @@
                     android:layout_marginTop="2dp"
                     android:text="Free up memory and disk space used by thumbnails"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="14sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodySmall" />
             </LinearLayout>
 
         </LinearLayout>

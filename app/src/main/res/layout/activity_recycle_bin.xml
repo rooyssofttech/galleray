@@ -75,7 +75,7 @@
                 android:text="Deleted photos and files will appear here so you can easily restore them."
                 android:textAlignment="center"
                 android:textColor="?attr/colorOnSurfaceVariant"
-                android:textSize="13sp" />
+                android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
 
         </LinearLayout>
 

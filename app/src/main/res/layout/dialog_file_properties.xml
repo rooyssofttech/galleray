@@ -44,7 +44,7 @@
             android:layout_height="wrap_content"
             android:text="FILE INFORMATION"
             android:textColor="?attr/colorPrimary"
-            android:textSize="12sp"
+            android:textAppearance="@style/TextAppearance.Material3.BodySmall"
             android:textStyle="bold" />
 
         <TableLayout
@@ -58,11 +58,11 @@
                     android:layout_width="120dp"
                     android:text="Size:"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
                 <TextView
                     android:id="@+id/tvPropSize"
                     android:textColor="?attr/colorOnSurface"
-                    android:textSize="13sp"
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
                     android:textStyle="bold" />
             </TableRow>
 
@@ -71,11 +71,11 @@
                     android:layout_width="120dp"
                     android:text="Resolution:"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
                 <TextView
                     android:id="@+id/tvPropResolution"
                     android:textColor="?attr/colorOnSurface"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
             </TableRow>
 
             <TableRow android:paddingVertical="3dp">
@@ -83,11 +83,11 @@
                     android:layout_width="120dp"
                     android:text="Type / Format:"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
                 <TextView
                     android:id="@+id/tvPropMime"
                     android:textColor="?attr/colorOnSurface"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
             </TableRow>
 
             <TableRow android:paddingVertical="3dp">
@@ -95,11 +95,11 @@
                     android:layout_width="120dp"
                     android:text="Modified:"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
                 <TextView
                     android:id="@+id/tvPropDate"
                     android:textColor="?attr/colorOnSurface"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
             </TableRow>
 
             <TableRow android:paddingVertical="3dp">
@@ -107,11 +107,11 @@
                     android:layout_width="120dp"
                     android:text="Location / Path:"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
                 <TextView
                     android:id="@+id/tvPropPath"
                     android:textColor="?attr/colorOnSurface"
-                    android:textSize="12sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodySmall" />
             </TableRow>
         </TableLayout>
 
@@ -123,7 +123,7 @@
             android:layout_marginTop="16dp"
             android:text="VIDEO SPECIFICATIONS &amp; STREAM"
             android:textColor="?attr/colorPrimary"
-            android:textSize="12sp"
+            android:textAppearance="@style/TextAppearance.Material3.BodySmall"
             android:textStyle="bold"
             android:visibility="gone" />
 
@@ -140,11 +140,11 @@
                     android:layout_width="120dp"
                     android:text="Duration:"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
                 <TextView
                     android:id="@+id/tvVideoDuration"
                     android:textColor="?attr/colorOnSurface"
-                    android:textSize="13sp"
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
                     android:textStyle="bold" />
             </TableRow>
 
@@ -153,11 +153,11 @@
                     android:layout_width="120dp"
                     android:text="Bitrate:"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
                 <TextView
                     android:id="@+id/tvVideoBitrate"
                     android:textColor="?attr/colorOnSurface"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
             </TableRow>
 
             <TableRow android:paddingVertical="3dp">
@@ -165,11 +165,11 @@
                     android:layout_width="120dp"
                     android:text="Video Codec:"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
                 <TextView
                     android:id="@+id/tvVideoCodec"
                     android:textColor="?attr/colorOnSurface"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
             </TableRow>
 
             <TableRow android:paddingVertical="3dp">
@@ -177,11 +177,11 @@
                     android:layout_width="120dp"
                     android:text="Audio:"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
                 <TextView
                     android:id="@+id/tvVideoAudio"
                     android:textColor="?attr/colorOnSurface"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
             </TableRow>
 
             <TableRow android:paddingVertical="3dp">
@@ -189,11 +189,11 @@
                     android:layout_width="120dp"
                     android:text="Orientation:"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
                 <TextView
                     android:id="@+id/tvVideoOrientation"
                     android:textColor="?attr/colorOnSurface"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
             </TableRow>
 
             <TableRow android:paddingVertical="3dp">
@@ -201,11 +201,11 @@
                     android:layout_width="120dp"
                     android:text="Recorded Date:"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
                 <TextView
                     android:id="@+id/tvVideoDate"
                     android:textColor="?attr/colorOnSurface"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
             </TableRow>
 
         </TableLayout>
@@ -218,7 +218,7 @@
             android:layout_marginTop="16dp"
             android:text="CAMERA &amp; SHOT DETAILS (EXIF)"
             android:textColor="?attr/colorPrimary"
-            android:textSize="12sp"
+            android:textAppearance="@style/TextAppearance.Material3.BodySmall"
             android:textStyle="bold" />
 
         <TableLayout
@@ -233,11 +233,11 @@
                     android:layout_width="120dp"
                     android:text="Camera Device:"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
                 <TextView
                     android:id="@+id/tvExifCamera"
                     android:textColor="?attr/colorOnSurface"
-                    android:textSize="13sp"
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
                     android:textStyle="bold" />
             </TableRow>
 
@@ -246,11 +246,11 @@
                     android:layout_width="120dp"
                     android:text="Date &amp; Time:"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
                 <TextView
                     android:id="@+id/tvExifDateTaken"
                     android:textColor="?attr/colorOnSurface"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
             </TableRow>
 
             <TableRow android:paddingVertical="3dp">
@@ -258,11 +258,11 @@
                     android:layout_width="120dp"
                     android:text="Aperture:"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
                 <TextView
                     android:id="@+id/tvExifAperture"
                     android:textColor="?attr/colorOnSurface"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
             </TableRow>
 
             <TableRow android:paddingVertical="3dp">
@@ -270,11 +270,11 @@
                     android:layout_width="120dp"
                     android:text="Shutter Speed:"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
                 <TextView
                     android:id="@+id/tvExifShutter"
                     android:textColor="?attr/colorOnSurface"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
             </TableRow>
 
             <TableRow android:paddingVertical="3dp">
@@ -282,11 +282,11 @@
                     android:layout_width="120dp"
                     android:text="ISO Speed:"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
                 <TextView
                     android:id="@+id/tvExifIso"
                     android:textColor="?attr/colorOnSurface"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
             </TableRow>
 
             <TableRow android:paddingVertical="3dp">
@@ -294,11 +294,11 @@
                     android:layout_width="120dp"
                     android:text="Focal Length:"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
                 <TextView
                     android:id="@+id/tvExifFocal"
                     android:textColor="?attr/colorOnSurface"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
             </TableRow>
 
             <TableRow android:paddingVertical="3dp">
@@ -306,11 +306,11 @@
                     android:layout_width="120dp"
                     android:text="Flash:"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
                 <TextView
                     android:id="@+id/tvExifFlash"
                     android:textColor="?attr/colorOnSurface"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
             </TableRow>
 
             <TableRow android:paddingVertical="3dp">
@@ -318,11 +318,11 @@
                     android:layout_width="120dp"
                     android:text="White Balance:"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
                 <TextView
                     android:id="@+id/tvExifWb"
                     android:textColor="?attr/colorOnSurface"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
             </TableRow>
 
             <TableRow android:paddingVertical="3dp">
@@ -330,11 +330,11 @@
                     android:layout_width="120dp"
                     android:text="GPS Location:"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
                 <TextView
                     android:id="@+id/tvExifLocation"
                     android:textColor="?attr/colorPrimary"
-                    android:textSize="13sp" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
             </TableRow>
 
         </TableLayout>

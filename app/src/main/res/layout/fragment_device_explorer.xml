@@ -62,17 +62,18 @@
                             android:orientation="vertical">
 
                             <ImageView
-                                android:layout_width="28dp"
-                                android:layout_height="28dp"
+                                android:layout_width="30dp"
+                                android:layout_height="30dp"
                                 android:src="@drawable/ic_cleaner"
                                 app:tint="@color/cat_apks" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="3dp"
+                                android:layout_marginTop="4dp"
                                 android:text="Cleaner"
-                                android:textSize="11sp"
+                                android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                                android:textColor="?attr/colorOnSurface"
                                 android:textStyle="bold" />
                         </LinearLayout>
 
@@ -85,17 +86,18 @@
                             android:orientation="vertical">
 
                             <ImageView
-                                android:layout_width="28dp"
-                                android:layout_height="28dp"
+                                android:layout_width="30dp"
+                                android:layout_height="30dp"
                                 android:src="@drawable/ic_vault"
                                 app:tint="@color/cat_videos" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="3dp"
+                                android:layout_marginTop="4dp"
                                 android:text="Vault"
-                                android:textSize="11sp"
+                                android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                                android:textColor="?attr/colorOnSurface"
                                 android:textStyle="bold" />
                         </LinearLayout>
 
@@ -108,17 +110,18 @@
                             android:orientation="vertical">
 
                             <ImageView
-                                android:layout_width="28dp"
-                                android:layout_height="28dp"
+                                android:layout_width="30dp"
+                                android:layout_height="30dp"
                                 android:src="@drawable/ic_delete"
                                 app:tint="@color/cat_archives" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="3dp"
+                                android:layout_marginTop="4dp"
                                 android:text="Recycle Bin"
-                                android:textSize="11sp"
+                                android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                                android:textColor="?attr/colorOnSurface"
                                 android:textStyle="bold" />
                         </LinearLayout>
 
@@ -162,7 +165,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="6dp"
-                            android:text="🎵 Audio / Music"
+                            android:text="🎵 Audio"
                             app:chipStrokeWidth="1dp" />
 
                         <com.google.android.material.chip.Chip

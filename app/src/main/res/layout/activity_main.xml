@@ -44,7 +44,7 @@
                     android:singleLine="true"
                     android:ellipsize="end"
                     android:text="@string/app_header_subtitle"
-                    android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
                     android:textColor="?attr/colorOnSurfaceVariant" />
 
             </LinearLayout>
@@ -61,7 +61,8 @@
             app:tabIndicatorHeight="3dp"
             app:tabMode="fixed"
             app:tabSelectedTextColor="?attr/colorPrimary"
-            app:tabTextColor="?attr/colorOnSurfaceVariant" />
+            app:tabTextColor="?attr/colorOnSurfaceVariant"
+            app:tabTextAppearance="@style/TextAppearance.Gallery.Tab" />
 
     </com.google.android.material.appbar.AppBarLayout>
 

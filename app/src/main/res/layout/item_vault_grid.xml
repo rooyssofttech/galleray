@@ -2,31 +2,40 @@
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="160dp"
+    android:layout_height="wrap_content"
     android:layout_margin="4dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="2dp"
+    app:cardCornerRadius="@dimen/corner_radius_medium"
+    app:cardElevation="1dp"
+    app:strokeWidth="0dp"
     app:cardBackgroundColor="?attr/colorSurfaceVariant">
 
-    <FrameLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
 
         <ImageView
             android:id="@+id/imgVaultThumbnail"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/ic_vault" />
+            android:src="@drawable/ic_vault"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintDimensionRatio="1:1" />
 
         <!-- Overlay Gradient Info -->
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:background="#CC16171E"
+            android:background="#D916171E"
             android:orientation="vertical"
-            android:padding="8dp">
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="6dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
             <TextView
                 android:id="@+id/tvVaultName"
@@ -35,13 +44,13 @@
                 android:ellipsize="middle"
                 android:maxLines="1"
                 android:textColor="#FFFFFF"
-                android:textSize="11sp"
+                android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
                 android:textStyle="bold" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="3dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -51,26 +60,26 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:textColor="#D0D0DA"
-                    android:textSize="10sp" />
+                    android:textSize="@dimen/text_label_small" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnRestore"
-                    style="@style/Widget.Material3.Button.TonalButton"
+                    style="@style/Widget.Material3.Button"
                     android:layout_width="wrap_content"
-                    android:layout_height="28dp"
+                    android:layout_height="32dp"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
-                    android:paddingHorizontal="8dp"
+                    android:paddingHorizontal="10dp"
                     android:text="Restore"
-                    android:textColor="#FFFFFF"
-                    android:textSize="10sp"
-                    app:backgroundTint="#3B50DF"
-                    app:cornerRadius="14dp" />
+                    android:textColor="?attr/colorOnPrimary"
+                    android:textSize="@dimen/text_label_small"
+                    app:backgroundTint="?attr/colorPrimary"
+                    app:cornerRadius="16dp" />
 
             </LinearLayout>
 
         </LinearLayout>
 
-    </FrameLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </com.google.android.material.card.MaterialCardView>

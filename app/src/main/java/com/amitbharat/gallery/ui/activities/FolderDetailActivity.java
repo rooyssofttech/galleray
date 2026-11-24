@@ -156,7 +156,11 @@ public class FolderDetailActivity extends AppCompatActivity implements MediaGrid
     }
 
     private void setupToolbar() {
-        binding.toolbar.setTitle(folderItem.getFolderName());
+        String displayName = folderItem.getFolderName();
+        if ("0".equals(displayName) || (folderItem.getFolderPath() != null && folderItem.getFolderPath().endsWith("/0"))) {
+            displayName = getString(R.string.storage_internal);
+        }
+        binding.toolbar.setTitle(displayName);
         binding.toolbar.setNavigationOnClickListener(v -> {
             if (isSelectionMode) {
                 clearSelection();

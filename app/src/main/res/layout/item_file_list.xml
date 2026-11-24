@@ -6,7 +6,7 @@
     android:background="?attr/selectableItemBackground"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingHorizontal="12dp"
+    android:paddingHorizontal="14dp"
     android:paddingVertical="10dp">
 
     <ImageView
@@ -24,20 +24,23 @@
 
         <TextView
             android:id="@+id/tvFileName"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ellipsize="middle"
             android:maxLines="1"
             android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+            android:textColor="?attr/colorOnSurface"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/tvFileDetails"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            android:textSize="12sp" />
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant" />
 
     </LinearLayout>
 
@@ -51,10 +54,11 @@
 
     <ImageButton
         android:id="@+id/btnMore"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:src="@drawable/ic_more"
+        app:tint="?attr/colorOnSurfaceVariant"
         android:contentDescription="@string/action_properties" />
 
 </LinearLayout>

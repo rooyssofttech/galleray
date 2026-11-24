@@ -15,6 +15,8 @@
         <item name="colorOnSurface">@color/md_theme_light_onSurface</item>
         <item name="colorSurfaceVariant">@color/md_theme_light_surfaceVariant</item>
         <item name="colorOnSurfaceVariant">@color/md_theme_light_onSurfaceVariant</item>
+        <item name="colorOutline">@color/md_theme_light_outline</item>
+        <item name="colorOutlineVariant">@color/md_theme_light_outlineVariant</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">true</item>
@@ -23,6 +25,20 @@
         <item name="android:scrollbarTrackVertical">@drawable/scrollbar_track</item>
         <item name="android:scrollbarSize">5dp</item>
         <item name="android:fadeScrollbars">false</item>
+
+        <!-- Global Typography Mapping -->
+        <item name="textAppearanceHeadlineLarge">@style/TextAppearance.Gallery.HeadlineLarge</item>
+        <item name="textAppearanceHeadlineMedium">@style/TextAppearance.Gallery.HeadlineMedium</item>
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.Gallery.HeadlineSmall</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.Gallery.TitleLarge</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.Gallery.TitleMedium</item>
+        <item name="textAppearanceTitleSmall">@style/TextAppearance.Gallery.TitleSmall</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.Gallery.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.Gallery.BodyMedium</item>
+        <item name="textAppearanceBodySmall">@style/TextAppearance.Gallery.BodySmall</item>
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.Gallery.LabelLarge</item>
+        <item name="textAppearanceLabelMedium">@style/TextAppearance.Gallery.LabelMedium</item>
+        <item name="textAppearanceLabelSmall">@style/TextAppearance.Gallery.LabelSmall</item>
     </style>
 
     <!-- Splash Screen Theme -->
@@ -33,24 +49,131 @@
         <item name="android:windowLightStatusBar">false</item>
     </style>
 
-    <!-- Immersive Media Viewer Theme (Dark background with transparent bars) -->
-    <style name="Theme.Gallery.MediaViewer" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="android:windowBackground">#000000</item>
+    <!-- Immersive Media Viewer & Editor Theme (Professional Dark Canvas) -->
+    <style name="Theme.Gallery.MediaViewer" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/md_theme_dark_primary</item>
+        <item name="colorOnPrimary">#00189B</item>
+        <item name="colorPrimaryContainer">#253A99</item>
+        <item name="colorOnPrimaryContainer">#DFE0FF</item>
+        <item name="colorSecondary">@color/md_theme_dark_secondary</item>
+        <item name="colorOnSecondary">#2E2F42</item>
+        <item name="android:colorBackground">#0E0F14</item>
+        <item name="colorOnBackground">#E4E1E6</item>
+        <item name="colorSurface">#16171E</item>
+        <item name="colorOnSurface">#FFFFFF</item>
+        <item name="colorSurfaceVariant">#242634</item>
+        <item name="colorOnSurfaceVariant">#C7C5D0</item>
+        <item name="colorOutline">#777680</item>
+        <item name="colorOutlineVariant">#46464F</item>
+        <item name="android:windowBackground">#0E0F14</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:scrollbarThumbVertical">@drawable/scrollbar_thumb</item>
+        <item name="android:scrollbarTrackVertical">@drawable/scrollbar_track</item>
+        <item name="android:scrollbarSize">5dp</item>
+        <item name="android:fadeScrollbars">false</item>
+
+        <!-- Typography Mapping for Media Viewer -->
+        <item name="textAppearanceHeadlineLarge">@style/TextAppearance.Gallery.HeadlineLarge</item>
+        <item name="textAppearanceHeadlineMedium">@style/TextAppearance.Gallery.HeadlineMedium</item>
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.Gallery.HeadlineSmall</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.Gallery.TitleLarge</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.Gallery.TitleMedium</item>
+        <item name="textAppearanceTitleSmall">@style/TextAppearance.Gallery.TitleSmall</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.Gallery.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.Gallery.BodyMedium</item>
+        <item name="textAppearanceBodySmall">@style/TextAppearance.Gallery.BodySmall</item>
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.Gallery.LabelLarge</item>
+        <item name="textAppearanceLabelMedium">@style/TextAppearance.Gallery.LabelMedium</item>
+        <item name="textAppearanceLabelSmall">@style/TextAppearance.Gallery.LabelSmall</item>
+    </style>
+
+    <!-- Unified Typography Styles -->
+    <style name="TextAppearance.Gallery.HeadlineLarge" parent="TextAppearance.Material3.HeadlineLarge">
+        <item name="fontFamily">sans-serif</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">@dimen/text_display</item>
+    </style>
+
+    <style name="TextAppearance.Gallery.HeadlineMedium" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="fontFamily">sans-serif</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">@dimen/text_headline</item>
+    </style>
+
+    <style name="TextAppearance.Gallery.HeadlineSmall" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="fontFamily">sans-serif</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">@dimen/text_title_large</item>
+    </style>
+
+    <style name="TextAppearance.Gallery.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
+        <item name="fontFamily">sans-serif-medium</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">@dimen/text_title_large</item>
+    </style>
+
+    <style name="TextAppearance.Gallery.TitleMedium" parent="TextAppearance.Material3.TitleMedium">
+        <item name="fontFamily">sans-serif-medium</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">@dimen/text_title_medium</item>
+    </style>
+
+    <style name="TextAppearance.Gallery.TitleSmall" parent="TextAppearance.Material3.TitleSmall">
+        <item name="fontFamily">sans-serif-medium</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">@dimen/text_title_small</item>
+    </style>
+
+    <style name="TextAppearance.Gallery.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
+        <item name="fontFamily">sans-serif</item>
+        <item name="android:textSize">@dimen/text_body_large</item>
+    </style>
+
+    <style name="TextAppearance.Gallery.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
+        <item name="fontFamily">sans-serif</item>
+        <item name="android:textSize">@dimen/text_body_medium</item>
+    </style>
+
+    <style name="TextAppearance.Gallery.BodySmall" parent="TextAppearance.Material3.BodySmall">
+        <item name="fontFamily">sans-serif</item>
+        <item name="android:textSize">@dimen/text_body_small</item>
+    </style>
+
+    <style name="TextAppearance.Gallery.LabelLarge" parent="TextAppearance.Material3.LabelLarge">
+        <item name="fontFamily">sans-serif-medium</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">@dimen/text_label_large</item>
+    </style>
+
+    <style name="TextAppearance.Gallery.LabelMedium" parent="TextAppearance.Material3.LabelMedium">
+        <item name="fontFamily">sans-serif-medium</item>
+        <item name="android:textSize">@dimen/text_label_medium</item>
+    </style>
+
+    <style name="TextAppearance.Gallery.LabelSmall" parent="TextAppearance.Material3.LabelSmall">
+        <item name="fontFamily">sans-serif-medium</item>
+        <item name="android:textSize">@dimen/text_label_small</item>
+    </style>
+
+    <style name="TextAppearance.Gallery.Tab" parent="TextAppearance.Material3.TitleSmall">
+        <item name="fontFamily">sans-serif-medium</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">15sp</item>
     </style>
 
     <!-- Rounded Corner Card Style -->
     <style name="Widget.Gallery.Card" parent="Widget.Material3.CardView.Elevated">
-        <item name="cardCornerRadius">16dp</item>
-        <item name="cardElevation">2dp</item>
+        <item name="cardCornerRadius">@dimen/corner_radius_large</item>
+        <item name="cardElevation">1dp</item>
         <item name="strokeWidth">0dp</item>
     </style>
 
     <style name="Widget.Gallery.Chip" parent="Widget.Material3.Chip.Filter">
-        <item name="chipCornerRadius">12dp</item>
-        <item name="chipMinTouchTargetSize">36dp</item>
+        <item name="chipCornerRadius">@dimen/corner_radius_medium</item>
+        <item name="chipMinTouchTargetSize">@dimen/chip_touch_target</item>
+        <item name="android:textAppearance">@style/TextAppearance.Gallery.LabelMedium</item>
     </style>
 </resources>

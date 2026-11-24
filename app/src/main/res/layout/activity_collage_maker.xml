@@ -31,7 +31,7 @@
                 android:textStyle="bold"
                 android:textColor="#FFFFFF"
                 app:cornerRadius="21dp"
-                app:backgroundTint="#0088FF"
+                app:backgroundTint="@color/md_theme_light_primary"
                 app:icon="@drawable/ic_check"
                 app:iconTint="#FFFFFF"
                 app:iconSize="18dp"
@@ -102,7 +102,7 @@
                 android:paddingStart="8dp"
                 android:text="Image 1 Selected"
                 android:textColor="#80D8FF"
-                android:textSize="13sp"
+                android:textSize="@dimen/text_label_large"
                 android:textStyle="bold" />
 
             <ImageButton
@@ -394,7 +394,7 @@
                     android:paddingHorizontal="16dp"
                     android:text="Solid Colors"
                     android:textColor="#9E9E9E"
-                    android:textSize="11sp" />
+                    android:textSize="@dimen/text_label_small" />
 
                 <HorizontalScrollView
                     android:layout_width="match_parent"
@@ -418,7 +418,7 @@
                     android:paddingHorizontal="16dp"
                     android:text="Modern Gradients"
                     android:textColor="#9E9E9E"
-                    android:textSize="11sp" />
+                    android:textSize="@dimen/text_label_small" />
 
                 <HorizontalScrollView
                     android:layout_width="match_parent"
@@ -557,7 +557,7 @@
                         android:layout_height="wrap_content"
                         android:text="Drag items on canvas to place"
                         android:textColor="#80D8FF"
-                        android:textSize="11sp" />
+                        android:textSize="@dimen/text_label_small" />
                 </LinearLayout>
 
                 <TextView
@@ -566,7 +566,7 @@
                     android:layout_marginTop="8dp"
                     android:text="Tap to Add Emoji / Sticker:"
                     android:textColor="#CCCCCC"
-                    android:textSize="11sp" />
+                    android:textSize="@dimen/text_label_small" />
 
                 <HorizontalScrollView
                     android:layout_width="match_parent"

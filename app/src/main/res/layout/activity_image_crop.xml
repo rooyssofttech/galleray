@@ -217,7 +217,7 @@
                     android:layout_marginEnd="6dp"
                     android:text="Rotate"
                     android:textColor="#FFFFFF"
-                    android:textSize="12.5sp"
+                    android:textSize="@dimen/text_label_medium"
                     app:backgroundTint="#242634"
                     app:strokeColor="#3F4257"
                     app:strokeWidth="1.5dp"
@@ -235,7 +235,7 @@
                     android:layout_marginHorizontal="3dp"
                     android:text="Flip H"
                     android:textColor="#FFFFFF"
-                    android:textSize="12.5sp"
+                    android:textSize="@dimen/text_label_medium"
                     app:backgroundTint="#242634"
                     app:strokeColor="#3F4257"
                     app:strokeWidth="1.5dp"
@@ -253,7 +253,7 @@
                     android:layout_marginStart="6dp"
                     android:text="Flip V"
                     android:textColor="#FFFFFF"
-                    android:textSize="12.5sp"
+                    android:textSize="@dimen/text_label_medium"
                     app:backgroundTint="#242634"
                     app:strokeColor="#3F4257"
                     app:strokeWidth="1.5dp"
@@ -286,7 +286,7 @@
                     android:layout_height="wrap_content"
                     android:text="☀️ Brightness"
                     android:textColor="#D0D3E5"
-                    android:textSize="11.5sp" />
+                    android:textSize="@dimen/text_label_medium" />
 
                 <com.google.android.material.slider.Slider
                     android:id="@+id/sliderBrightness"
@@ -308,7 +308,7 @@
                     android:gravity="end"
                     android:text="0"
                     android:textColor="#FFFFFF"
-                    android:textSize="11.5sp" />
+                    android:textSize="@dimen/text_label_medium" />
             </LinearLayout>
 
             <!-- Contrast -->
@@ -323,7 +323,7 @@
                     android:layout_height="wrap_content"
                     android:text="🌓 Contrast"
                     android:textColor="#D0D3E5"
-                    android:textSize="11.5sp" />
+                    android:textSize="@dimen/text_label_medium" />
 
                 <com.google.android.material.slider.Slider
                     android:id="@+id/sliderContrast"
@@ -345,7 +345,7 @@
                     android:gravity="end"
                     android:text="0"
                     android:textColor="#FFFFFF"
-                    android:textSize="11.5sp" />
+                    android:textSize="@dimen/text_label_medium" />
             </LinearLayout>
 
             <!-- Saturation -->
@@ -360,7 +360,7 @@
                     android:layout_height="wrap_content"
                     android:text="🎨 Saturation"
                     android:textColor="#D0D3E5"
-                    android:textSize="11.5sp" />
+                    android:textSize="@dimen/text_label_medium" />
 
                 <com.google.android.material.slider.Slider
                     android:id="@+id/sliderSaturation"
@@ -382,7 +382,7 @@
                     android:gravity="end"
                     android:text="0"
                     android:textColor="#FFFFFF"
-                    android:textSize="11.5sp" />
+                    android:textSize="@dimen/text_label_medium" />
             </LinearLayout>
 
             <!-- Warmth -->
@@ -397,7 +397,7 @@
                     android:layout_height="wrap_content"
                     android:text="🌡️ Warmth"
                     android:textColor="#D0D3E5"
-                    android:textSize="11.5sp" />
+                    android:textSize="@dimen/text_label_medium" />
 
                 <com.google.android.material.slider.Slider
                     android:id="@+id/sliderWarmth"
@@ -419,7 +419,7 @@
                     android:gravity="end"
                     android:text="0"
                     android:textColor="#FFFFFF"
-                    android:textSize="11.5sp" />
+                    android:textSize="@dimen/text_label_medium" />
             </LinearLayout>
 
             <com.google.android.material.button.MaterialButton
@@ -432,7 +432,7 @@
                 android:insetBottom="0dp"
                 android:text="Reset Adjustments"
                 android:textColor="#A0A5BD"
-                android:textSize="11sp" />
+                android:textSize="@dimen/text_label_small" />
 
         </LinearLayout>
 
@@ -588,7 +588,7 @@
                     android:layout_height="wrap_content"
                     android:text="Brush Size"
                     android:textColor="#D1D5DB"
-                    android:textSize="13sp" />
+                    android:textSize="@dimen/text_label_large" />
 
                 <com.google.android.material.slider.Slider
                     android:id="@+id/sliderEraserBrush"

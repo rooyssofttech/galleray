@@ -44,9 +44,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Folders"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
+                    android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
                     android:textColor="?attr/colorOnSurface"
+                    android:textStyle="bold"
                     android:paddingStart="16dp"
                     android:paddingTop="12dp"
                     android:paddingBottom="4dp" />
