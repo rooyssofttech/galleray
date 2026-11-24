@@ -64,9 +64,8 @@
             android:layout_height="wrap_content"
             android:ellipsize="middle"
             android:maxLines="1"
-            android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
-            android:textColor="?attr/colorOnSurface"
-            android:textStyle="bold" />
+            android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+            android:textColor="?attr/colorOnSurface" />
 
         <TextView
             android:id="@+id/tvDetails"

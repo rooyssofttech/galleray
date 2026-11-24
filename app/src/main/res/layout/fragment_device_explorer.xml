@@ -70,11 +70,10 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
+                                android:layout_marginTop="3dp"
                                 android:text="Cleaner"
-                                android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
-                                android:textColor="?attr/colorOnSurface"
-                                android:textStyle="bold" />
+                                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                                android:textColor="?attr/colorOnSurface" />
                         </LinearLayout>
 
                         <LinearLayout
@@ -94,11 +93,10 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
+                                android:layout_marginTop="3dp"
                                 android:text="Vault"
-                                android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
-                                android:textColor="?attr/colorOnSurface"
-                                android:textStyle="bold" />
+                                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                                android:textColor="?attr/colorOnSurface" />
                         </LinearLayout>
 
                         <LinearLayout
@@ -118,11 +116,10 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
+                                android:layout_marginTop="3dp"
                                 android:text="Recycle Bin"
-                                android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
-                                android:textColor="?attr/colorOnSurface"
-                                android:textStyle="bold" />
+                                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                                android:textColor="?attr/colorOnSurface" />
                         </LinearLayout>
 
                     </LinearLayout>

@@ -90,78 +90,57 @@
         <item name="textAppearanceLabelSmall">@style/TextAppearance.Gallery.LabelSmall</item>
     </style>
 
-    <!-- Unified Typography Styles -->
+    <!-- Unified Typography Styles (inherits device system font) -->
     <style name="TextAppearance.Gallery.HeadlineLarge" parent="TextAppearance.Material3.HeadlineLarge">
-        <item name="fontFamily">sans-serif</item>
-        <item name="android:textStyle">bold</item>
         <item name="android:textSize">@dimen/text_display</item>
     </style>
 
     <style name="TextAppearance.Gallery.HeadlineMedium" parent="TextAppearance.Material3.HeadlineMedium">
-        <item name="fontFamily">sans-serif</item>
-        <item name="android:textStyle">bold</item>
         <item name="android:textSize">@dimen/text_headline</item>
     </style>
 
     <style name="TextAppearance.Gallery.HeadlineSmall" parent="TextAppearance.Material3.HeadlineSmall">
-        <item name="fontFamily">sans-serif</item>
-        <item name="android:textStyle">bold</item>
         <item name="android:textSize">@dimen/text_title_large</item>
     </style>
 
     <style name="TextAppearance.Gallery.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
-        <item name="fontFamily">sans-serif-medium</item>
-        <item name="android:textStyle">bold</item>
         <item name="android:textSize">@dimen/text_title_large</item>
     </style>
 
     <style name="TextAppearance.Gallery.TitleMedium" parent="TextAppearance.Material3.TitleMedium">
-        <item name="fontFamily">sans-serif-medium</item>
-        <item name="android:textStyle">bold</item>
         <item name="android:textSize">@dimen/text_title_medium</item>
     </style>
 
     <style name="TextAppearance.Gallery.TitleSmall" parent="TextAppearance.Material3.TitleSmall">
-        <item name="fontFamily">sans-serif-medium</item>
-        <item name="android:textStyle">bold</item>
         <item name="android:textSize">@dimen/text_title_small</item>
     </style>
 
     <style name="TextAppearance.Gallery.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
-        <item name="fontFamily">sans-serif</item>
         <item name="android:textSize">@dimen/text_body_large</item>
     </style>
 
     <style name="TextAppearance.Gallery.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
-        <item name="fontFamily">sans-serif</item>
         <item name="android:textSize">@dimen/text_body_medium</item>
     </style>
 
     <style name="TextAppearance.Gallery.BodySmall" parent="TextAppearance.Material3.BodySmall">
-        <item name="fontFamily">sans-serif</item>
         <item name="android:textSize">@dimen/text_body_small</item>
     </style>
 
     <style name="TextAppearance.Gallery.LabelLarge" parent="TextAppearance.Material3.LabelLarge">
-        <item name="fontFamily">sans-serif-medium</item>
-        <item name="android:textStyle">bold</item>
         <item name="android:textSize">@dimen/text_label_large</item>
     </style>
 
     <style name="TextAppearance.Gallery.LabelMedium" parent="TextAppearance.Material3.LabelMedium">
-        <item name="fontFamily">sans-serif-medium</item>
         <item name="android:textSize">@dimen/text_label_medium</item>
     </style>
 
     <style name="TextAppearance.Gallery.LabelSmall" parent="TextAppearance.Material3.LabelSmall">
-        <item name="fontFamily">sans-serif-medium</item>
         <item name="android:textSize">@dimen/text_label_small</item>
     </style>
 
     <style name="TextAppearance.Gallery.Tab" parent="TextAppearance.Material3.TitleSmall">
-        <item name="fontFamily">sans-serif-medium</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textSize">15sp</item>
+        <item name="android:textSize">@dimen/text_label_large</item>
     </style>
 
     <!-- Rounded Corner Card Style -->
@@ -174,6 +153,6 @@
     <style name="Widget.Gallery.Chip" parent="Widget.Material3.Chip.Filter">
         <item name="chipCornerRadius">@dimen/corner_radius_medium</item>
         <item name="chipMinTouchTargetSize">@dimen/chip_touch_target</item>
-        <item name="android:textAppearance">@style/TextAppearance.Gallery.LabelMedium</item>
+        <item name="android:textAppearance">@style/TextAppearance.Gallery.LabelSmall</item>
     </style>
 </resources>

@@ -37,9 +37,8 @@
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:text="Internal Storage"
-                android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
-                android:textColor="?attr/colorOnSurface"
-                android:textStyle="bold" />
+                android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                android:textColor="?attr/colorOnSurface" />
 
         </LinearLayout>
 
@@ -47,11 +46,10 @@
             android:id="@+id/tvStorageCapacity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="10dp"
             android:text="45 GB / 128 GB"
             android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
-            android:textColor="?attr/colorOnSurface"
-            android:textStyle="bold" />
+            android:textColor="?attr/colorOnSurface" />
 
         <ProgressBar
             android:id="@+id/pbStorageUsage"
